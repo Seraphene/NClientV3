@@ -55,6 +55,7 @@ public class ZoomFragment extends Fragment {
     private Uri url;
     private int degree = 0;
     private boolean completedDownload = false;
+    private String failureReason = "";
     private View.OnClickListener clickListener;
     private OnZoomChangeListener zoomChangeListener;
     private ImageViewTarget<Drawable> target = null;
@@ -170,7 +171,8 @@ public class ZoomFragment extends Fragment {
                 super.onLoadFailed(errorDrawable);
                 applyDrawable(retryButton, photoView, errorDrawable);
                 loadingIndicator.setVisibility(View.GONE);
-                loadStatus.setText(R.string.page_load_failed);
+                loadStatus.setText(getString(R.string.page_load_failed) + "\n" + failureReason);
+                loadStatus.setOnClickListener(v -> showFailureDetails());
                 loadStatus.setVisibility(View.VISIBLE);
             }
 
@@ -205,6 +207,8 @@ public class ZoomFragment extends Fragment {
 
     public void loadImage(Priority priority) {
         if (completedDownload) return;
+        failureReason = "";
+        loadStatus.setOnClickListener(null);
         cancelRequest();
         RequestBuilder<Drawable> dra = loadPage();
         if (dra == null) return;
@@ -218,6 +222,7 @@ public class ZoomFragment extends Fragment {
                 @Override
                 public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
                     LogUtility.e("Reader image load failed", e);
+                    failureReason = com.maxwai.nclientv3.utility.ImageFailure.describe(e);
                     if (pageFile != null && url != null) {
                         pageFile = null;
                         photoView.post(() -> { if (isAdded() && photoView != null) loadImage(); });
@@ -251,6 +256,27 @@ public class ZoomFragment extends Fragment {
             }
         }
         return request.override(SIZE_ORIGINAL);
+    }
+
+    private void showFailureDetails() {
+        if (!isAdded()) return;
+        String address = url == null ? "Local file" : url.buildUpon().clearQuery().fragment(null).build().toString();
+        com.google.android.material.dialog.MaterialAlertDialogBuilder builder =
+            new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.failed)
+                .setMessage(failureReason + "\n\n" + address)
+                .setPositiveButton(R.string.retry, (dialog, which) -> loadImage())
+                .setNegativeButton(android.R.string.cancel, null);
+        if (url != null) builder.setNeutralButton(R.string.open_in_browser, (dialog, which) -> {
+            try {
+                startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW, url));
+            } catch (android.content.ActivityNotFoundException ignored) {
+                android.widget.Toast.makeText(requireContext(), R.string.failed, android.widget.Toast.LENGTH_SHORT).show();
+            }
+        });
+        androidx.appcompat.app.AlertDialog dialog = builder.show();
+        android.widget.TextView message = dialog.findViewById(android.R.id.message);
+        if (message != null) message.setTextIsSelectable(true);
     }
 
     public Drawable getDrawable() {

@@ -26,7 +26,7 @@ With a JDK and Android SDK 36 configured, run:
 ./gradlew assembleDebug bundleDebug :app:testPost28DebugUnitTest :app:testPre28DebugUnitTest lintPost28Debug --max-workers=4
 ```
 
-There are 11 regression tests per flavor, covering media URL resolution and
+There are 15 regression tests per flavor, covering media URL resolution and
 API transport failures. CI runs both debug test variants and builds both APK
 flavors. Lint also reports existing dependency/accessibility warnings.
 
@@ -41,7 +41,17 @@ repository evidence rather than independent confirmation of current behavior.
 
 Use the post28 debug APK on Android 9 or later, or the pre28 debug APK on
 Android 8/8.1. These are signed development builds named **NClientV3 Debug**,
-with package com.maxwai.nclientv3.debug and version code 420701. They install
+with package com.maxwai.nclientv3.debug and version code 420702. They install
 alongside the production app and require separate login/settings. Release
 signing credentials are not included. Do not uninstall the production app to
 try the debug build.
+
+## Follow-up: gallery 688486
+
+The first build did not resolve the user’s image-loading failure on Android 12.
+The gallery works in their browser on the same connection. Version 420702 adds
+non-sensitive image-failure diagnostics and a browser action using the exact
+requested image URL. It does not claim a confirmed fix for that remaining
+failure. Diagnostic tests cover HTTP status, DNS, timeouts and absent causes.
+A similar upstream report is https://github.com/maxwai/NClientV3/issues/264;
+its DNS workaround is external evidence, not a diagnosis of this user’s device.

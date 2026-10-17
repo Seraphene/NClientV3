@@ -16,7 +16,7 @@ val keystoreProperties = Properties().apply {
 val majorVersion = 4
 val minorVersion = 2
 val patchVersion = 7
-val buildVersion = 1
+val buildVersion = 2
 val version = "${majorVersion}.${minorVersion}.${patchVersion}"
 
 android {
@@ -64,7 +64,7 @@ android {
         }
         getByName("debug") {
             applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug"
+            versionNameSuffix = "-debug2"
             resValue("string", "app_name", "NClientV3 Debug")
         }
         create("RelWithDebInfo") {

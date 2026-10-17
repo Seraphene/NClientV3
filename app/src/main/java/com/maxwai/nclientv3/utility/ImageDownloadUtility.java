@@ -81,7 +81,8 @@ public class ImageDownloadUtility {
                     if (progress != null) progress.setVisibility(android.view.View.GONE);
                     if (status != null) {
                         status.setVisibility(android.view.View.VISIBLE);
-                        status.setText(com.maxwai.nclientv3.R.string.page_load_retry);
+                        status.setText(context.getString(com.maxwai.nclientv3.R.string.page_load_retry)
+                            + "\n" + ImageFailure.describe(e));
                         status.setOnClickListener(v -> loadImageOp(context, view, gallery, url, angle, priority));
                     }
                     return false;
