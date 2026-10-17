@@ -2,6 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item android:id="@+id/read_gallery" android:icon="@drawable/ic_play"
+        android:orderInCategory="0" android:title="@string/read_gallery"
+        app:showAsAction="ifRoom|withText" />
     <item
         android:id="@+id/favorite_manager"
         android:icon="@drawable/ic_favorite_border"

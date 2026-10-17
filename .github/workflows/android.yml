@@ -35,6 +35,9 @@ jobs:
             -   name: Assemble Debug with Gradle
                 run: ./gradlew assembleDebug
 
+            -   name: Test debug variants
+                run: ./gradlew :app:testPost28DebugUnitTest :app:testPre28DebugUnitTest
+
             -   name: Bundle Debug with Gradle
                 run: ./gradlew bundleDebug
 

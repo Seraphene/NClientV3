@@ -144,7 +144,7 @@ public class SimpleGallery extends GenericGallery {
             }
         }
         if (context != null && id > Global.getMaxId()) Global.updateMaxId(context, id);
-        return new SimpleGallery(title, id, mediaId, Uri.parse("https://t1." + Utility.getHost() + "/" + thumbPath), language, tags);
+        return new SimpleGallery(title, id, mediaId, Uri.parse(com.maxwai.nclientv3.utility.ImageUrlResolver.resolve(thumbPath, Utility.getHost(), true)), language, tags);
     }
 
     public boolean hasTags(Collection<Tag> tags) {

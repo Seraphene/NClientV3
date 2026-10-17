@@ -29,13 +29,14 @@ public class ApiAuthInterceptor implements Interceptor {
         Request request = chain.request();
         if (logRequests)
             LogUtility.d("Requested url: " + request.url());
-        if (request.header("Authorization") != null || !request.url().encodedPath().startsWith("/api/v2/")) {
+        if (!request.url().encodedPath().startsWith("/api/v2/")) {
             return chain.proceed(request);
         }
 
         Request.Builder r = request.newBuilder();
         r.addHeader("User-Agent", "NClient/" + BuildConfig.VERSION_NAME + " (https://github.com/maxwai/NClientV3)");
 
+        if (request.header("Authorization") != null) return chain.proceed(r.build());
         if (!AuthStore.hasValidApiKey(context)) return chain.proceed(r.build());
 
         String authorization = AuthStore.getAuthorizationHeader(context);
@@ -44,7 +45,7 @@ public class ApiAuthInterceptor implements Interceptor {
         Request authenticated =r.header("Authorization", authorization)
             .build();
         Response response = chain.proceed(authenticated);
-        if (response.code() == 401 || response.code() == 403) {
+        if (response.code() == 401) {
             AuthStore.setApiKeyValidation(context, false);
         } else if (response.isSuccessful()) {
             AuthStore.setApiKeyValidation(context, true);

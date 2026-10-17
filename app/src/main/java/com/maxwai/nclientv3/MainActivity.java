@@ -218,7 +218,7 @@ public class MainActivity extends BaseActivity
     private void initializeRecyclerView() {
         adapter = new ListAdapter(this);
         recycler.setAdapter(adapter);
-        recycler.setHasFixedSize(true);
+        recycler.setHasFixedSize(false);
         //recycler.setItemViewCacheSize(24);
         recycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -280,6 +280,10 @@ public class MainActivity extends BaseActivity
     }
 
     private void showError(@Nullable String text, @Nullable View.OnClickListener listener) {
+        if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
+            runOnUiThread(() -> showError(text, listener));
+            return;
+        }
         if (text == null) {
             hideError();
             return;
@@ -787,7 +791,8 @@ public class MainActivity extends BaseActivity
         @Override
         public void onFailure(Exception e) {
             super.onFailure(e);
-            showError(R.string.unable_to_connect_to_the_site, v -> {
+            showError(e instanceof com.maxwai.nclientv3.api.ApiResponse.Failure
+                ? e.getMessage() : getString(R.string.unable_to_connect_to_the_site), v -> {
                 inspector = inspector.cloneInspector(MainActivity.this, inspector.getResponse());
                 inspector.start();
             });

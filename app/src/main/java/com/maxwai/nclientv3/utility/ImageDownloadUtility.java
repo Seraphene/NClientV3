@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Handler;
 import android.widget.ImageView;
 
 import androidx.annotation.DrawableRes;
@@ -17,23 +16,16 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.load.resource.bitmap.Rotate;
 import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.ImageViewTarget;
 import com.bumptech.glide.request.target.Target;
 import com.maxwai.nclientv3.api.components.Gallery;
 import com.maxwai.nclientv3.components.GlideX;
 import com.maxwai.nclientv3.settings.Global;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 public class ImageDownloadUtility {
 
-    private static final Map<Gallery, List<Runnable>> imageDownloadQueue = new HashMap<>();
 
     public static void preloadImage(Context context, Uri url) {
         if (Global.getDownloadPolicy() == Global.DataUsageType.NONE) return;
@@ -68,61 +60,40 @@ public class ImageDownloadUtility {
             loadLogo(view);
             return;
         }
-        boolean newGallery = false;
-        if (!imageDownloadQueue.containsKey(gallery)) {
-            imageDownloadQueue.put(gallery, new LinkedList<>());
-            newGallery = true;
-        }
-        //noinspection DataFlowIssue
-        imageDownloadQueue.get(gallery).add(() -> {
-            LogUtility.d("Requested url glide: " + url.get());
-            RequestManager glide = GlideX.with(context);
-            if (glide == null) return;
-            Drawable logo = Global.getLogo(context.getResources());
-            RequestBuilder<Drawable> dra = glide.load(url.get());
-            if (angle != 0)
-                dra = dra.transform(new Rotate(angle));
-            dra.error(logo)
-                .addListener(new RequestListener<>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, @Nullable Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
-                        return false;
+        RequestManager glide = GlideX.with(view);
+        if (glide == null) return;
+        Uri imageUrl = url.get();
+        RequestBuilder<Drawable> request = glide.load(imageUrl);
+        if (angle != 0) request = request.transform(new Rotate(angle));
+        android.view.ViewGroup parent = view.getParent() instanceof android.view.ViewGroup
+            ? (android.view.ViewGroup) view.getParent() : null;
+        android.view.View progress = parent == null ? null : parent.findViewById(com.maxwai.nclientv3.R.id.page_loading);
+        android.widget.TextView status = parent == null ? null : parent.findViewById(com.maxwai.nclientv3.R.id.page_load_status);
+        if (progress != null) progress.setVisibility(android.view.View.VISIBLE);
+        if (status != null) status.setVisibility(android.view.View.GONE);
+        request.placeholder(Global.getLogo(context.getResources()))
+            .error(com.maxwai.nclientv3.R.drawable.ic_refresh)
+            .addListener(new RequestListener<Drawable>() {
+                @Override
+                public boolean onLoadFailed(@Nullable GlideException e, @Nullable Object model,
+                    @NonNull Target<Drawable> target, boolean first) {
+                    LogUtility.e("Image load failed", e);
+                    if (progress != null) progress.setVisibility(android.view.View.GONE);
+                    if (status != null) {
+                        status.setVisibility(android.view.View.VISIBLE);
+                        status.setText(com.maxwai.nclientv3.R.string.page_load_retry);
+                        status.setOnClickListener(v -> loadImageOp(context, view, gallery, url, angle, priority));
                     }
-
-                    @Override
-                    public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model, Target<Drawable> target, @NonNull DataSource dataSource, boolean isFirstResource) {
-                        if (gallery != null && !gallery.getGalleryData().getCheckedExt())
-                            gallery.getGalleryData().setCheckedExt();
-                        new Handler(context.getMainLooper()).post(() -> {
-                            //noinspection DataFlowIssue
-                            while (imageDownloadQueue.containsKey(gallery) && !imageDownloadQueue.get(gallery).isEmpty()) {
-                                //noinspection DataFlowIssue
-                                imageDownloadQueue.get(gallery).remove(0).run();
-                            }
-                        });
-                        return false;
-                    }
-                })
-                .placeholder(logo)
-                .into(new ImageViewTarget<Drawable>(view) {
-                    @Override
-                    protected void setResource(@Nullable Drawable resource) {
-                        new Handler(context.getMainLooper()).post(() -> this.view.setImageDrawable(resource));
-                    }
-                });
-        });
-        if (newGallery) {
-            //noinspection DataFlowIssue
-            imageDownloadQueue.get(gallery).remove(0).run();
-        } else if (priority) {
-            //noinspection DataFlowIssue
-            imageDownloadQueue.get(gallery).remove(imageDownloadQueue.get(gallery).size() - 1).run();
-        } else if (gallery == null || gallery.getGalleryData().getCheckedExt()) {
-            //noinspection DataFlowIssue
-            while (!imageDownloadQueue.get(gallery).isEmpty())
-                //noinspection DataFlowIssue
-                imageDownloadQueue.get(gallery).remove(0).run();
-        }
+                    return false;
+                }
+                @Override
+                public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model,
+                    Target<Drawable> target, @NonNull DataSource source, boolean first) {
+                    if (progress != null) progress.setVisibility(android.view.View.GONE);
+                    if (status != null) status.setVisibility(android.view.View.GONE);
+                    return false;
+                }
+            }).into(view);
     }
 
     private static Uri getUrlForGallery(Gallery gallery, int page, boolean shouldFull) {

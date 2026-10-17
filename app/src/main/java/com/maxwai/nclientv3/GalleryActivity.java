@@ -169,6 +169,7 @@ public class GalleryActivity extends BaseActivity {
             intent.putExtra(getPackageName() + ".PAGE", zoom);
             startActivity(intent);
         }
+        invalidateOptionsMenu();
         checkBookmark();
     }
 
@@ -251,6 +252,9 @@ public class GalleryActivity extends BaseActivity {
     private void menuItemsVisible(Menu menu) {
         boolean hasValidApiKey = AuthStore.hasValidApiKey(this);
         boolean isValidOnline = gallery.isValid() && !isLocal;
+        MenuItem read = menu.findItem(R.id.read_gallery);
+        read.setVisible(gallery.isValid() && gallery.getPageCount() > 0);
+        read.setTitle(Queries.ResumeTable.pageFromId(gallery.getId()) > 0 ? R.string.resume : R.string.read_gallery);
         onlineFavoriteItem = menu.findItem(R.id.add_online_gallery);
         onlineFavoriteItem.setVisible(isValidOnline && hasValidApiKey);
         menu.findItem(R.id.favorite_manager).setVisible(isValidOnline);
@@ -272,7 +276,19 @@ public class GalleryActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.download_gallery) {
+        if (id == R.id.read_gallery) {
+            if (!gallery.isLocal() && Global.getDownloadPolicy() == Global.DataUsageType.NONE) {
+                Toast.makeText(this, R.string.enable_network_to_continue, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+            int resume = Queries.ResumeTable.pageFromId(gallery.getId());
+            int page = Math.max(1, Math.min(resume, gallery.getPageCount()));
+            Intent reader = new Intent(this, ZoomActivity.class);
+            reader.putExtra(getPackageName() + ".GALLERY", gallery);
+            reader.putExtra(getPackageName() + ".PAGE", page);
+            startActivity(reader);
+            return true;
+        } else if (id == R.id.download_gallery) {
             if (Global.hasStoragePermission(this))
                 new RangeSelector(this, (Gallery) gallery).show();
             else

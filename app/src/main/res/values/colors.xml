@@ -6,7 +6,7 @@
     <color name="tint_dark">@android:color/black</color>
     <color name="tint_light">@android:color/white</color>
 
-    <color name="primaryColorVariant">@color/primary_material_light</color>
-    <color name="colorAccent">@android:color/holo_blue_bright</color>
-    <color name="colorPrimary">@android:color/holo_blue_bright</color>
+    <color name="primaryColorVariant">#F3F5FB</color>
+    <color name="colorAccent">#4263EB</color>
+    <color name="colorPrimary">#4263EB</color>
 </resources>

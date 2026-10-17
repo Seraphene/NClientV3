@@ -16,7 +16,7 @@ val keystoreProperties = Properties().apply {
 val majorVersion = 4
 val minorVersion = 2
 val patchVersion = 7
-val buildVersion = 0
+val buildVersion = 1
 val version = "${majorVersion}.${minorVersion}.${patchVersion}"
 
 android {
@@ -147,6 +147,7 @@ androidComponents {
 
 
 dependencies {
+    testImplementation("junit:junit:4.13.2")
 // Android
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("androidx.cardview:cardview:1.0.0")

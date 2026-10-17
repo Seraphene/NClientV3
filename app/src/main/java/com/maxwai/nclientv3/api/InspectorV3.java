@@ -31,7 +31,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -327,8 +326,8 @@ public class InspectorV3 extends Thread implements Parcelable {
     public boolean createDocument() throws IOException {
         if (jsonResponse != null) return true;
         try (Response response = Global.getClient(context.get()).newCall(new Request.Builder().url(url).build()).execute()) {
-            jsonResponse = response.body().string();
-            return response.code() == HttpURLConnection.HTTP_OK;
+            jsonResponse = ApiResponse.read(response);
+            return true;
         }
     }
 
@@ -388,15 +387,14 @@ public class InspectorV3 extends Thread implements Parcelable {
     private void doSingleV2() throws IOException, JSONException {
         galleries = new ArrayList<>(1);
         JSONObject v2 = new JSONObject(jsonResponse);
-        if (v2.has("error")) return;
+        if (v2.has("error")) throw new IOException("API returned a gallery error");
 
         // Random endpoint returns only {"id": N} — fetch full gallery detail
         if (!v2.has("title") && v2.has("id")) {
             int galleryId = v2.getInt("id");
             String detailUrl = Utility.getBaseUrl() + "api/v2/galleries/" + galleryId + "?include=related,favorite";
             try (Response resp = Global.getClient(context.get()).newCall(new Request.Builder().url(detailUrl).build()).execute()) {
-                String body = resp.body().string();
-                if (resp.code() != HttpURLConnection.HTTP_OK) return;
+                String body = ApiResponse.read(resp);
                 v2 = new JSONObject(body);
             }
         }

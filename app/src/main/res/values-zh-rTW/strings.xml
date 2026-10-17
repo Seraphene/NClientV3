@@ -327,4 +327,8 @@
     <string name="auth_error">驗證錯誤</string>
     <string name="auth_title">生物特徵登入</string>
     <string name="auth_subtitle">使用您的生物特徵憑證登入</string>
+    <string name="page_loading">正在載入頁面…</string>
+    <string name="page_load_failed">頁面載入失敗。請檢查網路連線後重試。</string>
+    <string name="page_load_retry">頁面載入失敗 · 點擊重試</string>
+    <string name="read_gallery">閱讀</string>
 </resources>

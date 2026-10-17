@@ -327,4 +327,8 @@
     <string name="auth_error">Problem bei Authentifizierung</string>
     <string name="auth_title">Biometrische Anmeldung für NClient</string>
     <string name="auth_subtitle">Anmelden mit Biometrischen Daten</string>
+    <string name="page_loading">Seite wird geladen…</string>
+    <string name="page_load_failed">Die Seite konnte nicht geladen werden. Prüfe deine Verbindung und tippe auf Wiederholen.</string>
+    <string name="page_load_retry">Seite nicht geladen · Zum Wiederholen tippen</string>
+    <string name="read_gallery">Lesen</string>
 </resources>

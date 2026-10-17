@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import com.maxwai.nclientv3.api.enums.ImageType;
 import com.maxwai.nclientv3.components.classes.Size;
 import com.maxwai.nclientv3.utility.Utility;
+import com.maxwai.nclientv3.utility.ImageUrlResolver;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -63,11 +64,11 @@ public class Page implements Parcelable {
         while (reader.peek() != JsonToken.END_OBJECT) {
             switch (reader.nextName()) {
                 case "path":
-                    String prefix = imageType == ImageType.PAGE ? "i1" : "t1";
-                    path = Uri.parse("https://" + prefix + "." + Utility.getHost() + "/" + reader.nextString());
+                    path = Uri.parse(ImageUrlResolver.resolve(reader.nextString(), Utility.getHost(), imageType != ImageType.PAGE));
                     break;
                 case "thumbnail":
-                    thumbPath = Uri.parse("https://t1." + Utility.getHost() + "/" + reader.nextString());
+                    if (reader.peek() == JsonToken.NULL) reader.nextNull();
+                    else thumbPath = Uri.parse(ImageUrlResolver.resolve(reader.nextString(), Utility.getHost(), true));
                     break;
                 case "width":
                     size.setWidth(reader.nextInt());

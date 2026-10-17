@@ -2,6 +2,7 @@
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
 
+        <item name="cardViewStyle">@style/ModernCardView</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryVariant">@color/primaryColorVariant</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -20,7 +21,13 @@
         <item name="cardViewStyle">@style/BlackCardView</item>
     </style>
 
-    <style name="BlackCardView" parent="CardView">
+    <style name="ModernCardView" parent="CardView">
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+    </style>
+
+    <style name="BlackCardView" parent="ModernCardView">
         <item name="cardBackgroundColor">#000000</item>
     </style>
 

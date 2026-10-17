@@ -322,22 +322,17 @@ public class GalleryData implements Parcelable {
         dest.writeByte((byte) (valid ? 1 : 0));
     }
 
-    private String truncateUrl(Uri uri) {
-        String output = uri.toString();
-        return output.substring(output.lastIndexOf('/'));
-    }
-
     public String createPagePath() {
         StringWriter writer = new StringWriter();
         writer.write(Integer.toString(pages.size()));
         writer.write(";");
-        writer.write(truncateUrl(cover.getThumbnailPath()));
+        writer.write(cover.getThumbnailPath().toString());
         writer.write(";");
-        writer.write(truncateUrl(thumbnail.getThumbnailPath()));
+        writer.write(thumbnail.getThumbnailPath().toString());
         writer.write(";");
         if (pages.isEmpty()) return writer.toString();
         for (Page page : pages) {
-            writer.write(truncateUrl(page.getImagePath()));
+            writer.write(page.getImagePath().toString());
             writer.write(";");
         }
         return writer.toString();

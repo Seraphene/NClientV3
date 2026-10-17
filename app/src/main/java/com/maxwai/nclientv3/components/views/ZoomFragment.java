@@ -24,9 +24,7 @@ import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.load.resource.bitmap.Rotate;
-import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.request.transition.Transition;
@@ -51,6 +49,8 @@ public class ZoomFragment extends Fragment {
     private static final float CHANGE_PAGE_THRESHOLD = .2f;
     private PhotoView photoView = null;
     private ImageButton retryButton;
+    private View loadingIndicator;
+    private android.widget.TextView loadStatus;
     private PageFile pageFile = null;
     private Uri url;
     private int degree = 0;
@@ -65,7 +65,9 @@ public class ZoomFragment extends Fragment {
 
     public static ZoomFragment newInstance(GenericGallery gallery, int page, @Nullable GalleryFolder directory) {
         Bundle args = new Bundle();
-        args.putString("URL", gallery.isLocal() ? null : ((Gallery) gallery).getPageUrl(page).toString());
+        args.putString("URL", gallery.isLocal() ? null : (Global.getDownloadPolicy() == Global.DataUsageType.THUMBNAIL
+            ? ((Gallery) gallery).getGalleryData().getPage(page).getThumbnailPath()
+            : ((Gallery) gallery).getHighPage(page)).toString());
         args.putParcelable("FOLDER", directory == null ? null : directory.getPage(page + 1));
         ZoomFragment fragment = new ZoomFragment();
         fragment.setArguments(args);
@@ -103,6 +105,8 @@ public class ZoomFragment extends Fragment {
         //find views
         photoView = rootView.findViewById(R.id.image);
         retryButton = rootView.findViewById(R.id.imageView);
+        loadingIndicator = rootView.findViewById(R.id.reader_loading);
+        loadStatus = rootView.findViewById(R.id.reader_status);
         //read arguments
         String str = getArguments().getString("URL");
         url = str == null ? null : Uri.parse(str);
@@ -156,19 +160,27 @@ public class ZoomFragment extends Fragment {
             public void onLoadStarted(@Nullable Drawable placeholder) {
                 super.onLoadStarted(placeholder);
                 applyDrawable(photoView, retryButton, placeholder);
+                loadingIndicator.setVisibility(View.VISIBLE);
+                loadStatus.setText(R.string.page_loading);
+                loadStatus.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onLoadFailed(@Nullable Drawable errorDrawable) {
                 super.onLoadFailed(errorDrawable);
                 applyDrawable(retryButton, photoView, errorDrawable);
+                loadingIndicator.setVisibility(View.GONE);
+                loadStatus.setText(R.string.page_load_failed);
+                loadStatus.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
                 applyDrawable(photoView, retryButton, resource);
+                loadingIndicator.setVisibility(View.GONE);
+                loadStatus.setVisibility(View.GONE);
                 if (resource instanceof Animatable)
-                    ((GifDrawable) resource).start();
+                    ((Animatable) resource).start();
             }
 
             @Override
@@ -180,6 +192,7 @@ public class ZoomFragment extends Fragment {
     }
 
     private void scalePhoto(Drawable drawable) {
+        if (drawable == null || drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) return;
         photoView.setScale(calculateScaleFactor(
             drawable.getIntrinsicWidth(),
             drawable.getIntrinsicHeight()
@@ -196,14 +209,20 @@ public class ZoomFragment extends Fragment {
         RequestBuilder<Drawable> dra = loadPage();
         if (dra == null) return;
         dra
-            .transform(new Rotate(degree))
-            .apply(new RequestOptions().fitCenter())
+            .transform(new com.bumptech.glide.load.MultiTransformation<>(
+                java.util.Arrays.asList(new com.bumptech.glide.load.resource.bitmap.FitCenter(), new Rotate(degree))))
             .placeholder(R.drawable.ic_launcher_foreground)
             .error(R.drawable.ic_refresh)
             .priority(priority)
             .addListener(new RequestListener<>() {
                 @Override
                 public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
+                    LogUtility.e("Reader image load failed", e);
+                    if (pageFile != null && url != null) {
+                        pageFile = null;
+                        photoView.post(() -> { if (isAdded() && photoView != null) loadImage(); });
+                        return true;
+                    }
                     return false;
                 }
 
@@ -221,7 +240,7 @@ public class ZoomFragment extends Fragment {
         RequestBuilder<Drawable> request;
         RequestManager glide = GlideX.with(photoView);
         if (glide == null) return null;
-        if (pageFile != null) {
+        if (pageFile != null && pageFile.isFile() && pageFile.length() > 0) {
             request = glide.load(pageFile);
             LogUtility.d("Requested file glide: " + pageFile);
         } else {
@@ -248,7 +267,20 @@ public class ZoomFragment extends Fragment {
 
     private void updateDegree() {
         degree = (degree + 270) % 360;
+        completedDownload = false;
         loadImage();
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (photoView != null && target != null) {
+            RequestManager manager = GlideX.with(photoView);
+            if (manager != null) manager.clear(target);
+        }
+        completedDownload = false;
+        target = null;
+        photoView = null;
+        super.onDestroyView();
     }
 
     public void rotate() {

@@ -3,7 +3,7 @@
     <color name="tint_dark">@android:color/white</color>
     <color name="tint_light">@android:color/black</color>
 
-    <color name="primaryColorVariant">@color/primary_material_dark</color>
-    <color name="colorAccent">@android:color/holo_blue_dark</color>
-    <color name="colorPrimary">@android:color/holo_blue_dark</color>
+    <color name="primaryColorVariant">#191D2B</color>
+    <color name="colorAccent">#A5B4FC</color>
+    <color name="colorPrimary">#A5B4FC</color>
 </resources>

@@ -327,4 +327,8 @@
     <string name="auth_error">Authentication error</string>
     <string name="auth_title">Biometric login for NClient</string>
     <string name="auth_subtitle">Log in using your biometric credential</string>
+    <string name="page_loading">جارٍ تحميل الصفحة…</string>
+    <string name="page_load_failed">تعذر تحميل الصفحة. تحقق من اتصالك ثم اضغط على إعادة المحاولة.</string>
+    <string name="page_load_retry">تعذر تحميل الصفحة · اضغط لإعادة المحاولة</string>
+    <string name="read_gallery">قراءة</string>
 </resources>
