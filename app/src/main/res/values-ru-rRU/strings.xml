@@ -334,4 +334,8 @@
     <string name="reader_timeout">Сервер изображений не ответил вовремя. Повторите попытку или откройте изображение в браузере.</string>
     <string name="reader_connection_details">Сведения о соединении</string>
     <string name="reader_loading_slow">Сервер изображений отвечает медленно…</string>
+    <string name="reader_rate_limited">Сервер просит подождать. Повторите попытку позже.</string>
+    <string name="archive_key_required">Для загрузки нужен действующий API-ключ в настройках.</string>
+    <string name="archive_disabled">Сервер временно отключил скачивание галерей.</string>
+    <string name="archive_paused">Загрузка приостановлена: %s</string>
 </resources>

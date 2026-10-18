@@ -334,4 +334,8 @@
     <string name="reader_timeout">Der Bildserver hat zu lange gebraucht. Versuche es erneut oder öffne das Bild im Browser.</string>
     <string name="reader_connection_details">Verbindungsdetails</string>
     <string name="reader_loading_slow">Der Bildserver antwortet langsam…</string>
+    <string name="reader_rate_limited">Der Server bittet um eine Pause. Bitte später erneut versuchen.</string>
+    <string name="archive_key_required">Downloads benötigen einen gültigen API-Schlüssel in den Einstellungen.</string>
+    <string name="archive_disabled">Galerie-Downloads sind auf dem Server derzeit deaktiviert.</string>
+    <string name="archive_paused">Download pausiert: %s</string>
 </resources>

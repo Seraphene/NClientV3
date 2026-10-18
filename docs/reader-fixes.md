@@ -1,138 +1,119 @@
-# Reader reliability and UI update
+# Reader reliability, API compatibility and UI update
 
-This update removes the success-gated image queue: one failed request no longer
-prevents the remaining gallery panels from loading. Glide manages concurrency
-and cancels requests when views are reused. Gallery panels have loading and
-retry states; the reader falls back from a broken downloaded file to its remote
-URL. Rotation now applies after a page has loaded, and reader requests are
-cleared when their view is destroyed.
+## API contract
 
-API v2 remains the data source. Absolute HTTPS image URLs and protocol-relative
-CDN URLs are preserved rather than prefixed with a guessed host. Existing
-relative paths still use the original image/thumbnail hosts. Saved metadata now
-retains complete URLs, while existing stored paths remain readable. HTTP errors,
-HTML responses and empty bodies are rejected before JSON parsing; HTTP 403 no
-longer marks a saved API key invalid. Credentials are never sent to image CDNs.
+This revision follows the official nhentai API documentation supplied by the user
+for **2.0.0+994d126**, including the response from
+[GET /api/v2/cdn](https://nhentai.net/api/v2/docs#/cdn/get_cdn_config_api_v2_cdn_get).
 
-Cards, light/dark colors and reader controls have been refreshed. The gallery
-Read/Resume action opens the saved page directly. New reader strings are
-included for every existing app locale.
+- Public gallery listing uses `result`, `num_pages`, `per_page` and `total`.
+  List cards read `english_title`, `japanese_title`, `thumbnail` and `tag_ids`.
+- Gallery details use `title`, `cover`, `thumbnail`, `pages` and full `tags`.
+  The existing `include=related,favorite` parameter is documented. Cover and
+  thumbnail objects contain `path`, `width` and `height`.
+- Relative media paths are retained verbatim. A public `/api/v2/cdn` request
+  obtains `image_servers` and `thumb_servers`. Reader pages use the image pool;
+  covers and thumbnails use the thumbnail pool. There are no hardcoded CDN
+  subdomains, guessed filename extensions, suffixes or page numbering in
+  network requests. Explicit absolute HTTPS media URLs remain authoritative.
+- CDN discovery is shared across concurrent image requests and cached for ten
+  minutes. A failed discovery has a 15-second cooldown. Successful media servers
+  are preferred for subsequent requests. Switching the configured site clears
+  the old server selection.
+- Connection/response-header failures and HTTP 502/503/504 can try the next
+  advertised server, within a finite call deadline. HTTP 400/401/403/404/429 do
+  not trigger server rotation. A partially downloaded response body is not
+  automatically restarted. No unadvertised host is used as a fallback.
+- API and media HTTP 429 responses create a shared service cooldown using
+  `Retry-After` (seconds or HTTP date), or 30 seconds when it is absent/invalid.
+  Requests during that interval fail locally without contacting another server.
+- Third-party authentication remains `Authorization: Key …`; the app does not
+  use first-party login or API-key-management endpoints. API requests identify
+  `NClient/version` and the project URL. Public CDN discovery and media requests
+  use a separate transport without API authorization or login cookies.
 
-## Validation
+The earlier fixed-host build **420704** is superseded. The user's browser test
+showed a reachability difference between `i1.nhentai.net` and `i.nhentai.net` for
+one image; the official documentation establishes that the advertised pool,
+which currently includes i1–i4, must determine server selection.
 
-With a JDK and Android SDK 36 configured, run:
+## Reader and saved metadata
+
+The success-gated image queue has been removed: one failed image no longer
+prevents later panels from loading. Glide handles concurrency, cancels reused
+views, and uses the app's dedicated media client rather than its default
+10-second transport. API requests have 15/30/45-second connect/read/call limits;
+media has 15/45/75-second limits, with five-second connect attempts when rotating
+advertised servers. TLS and certificate checks retain their defaults.
+
+Selected pages start before their neighbors. Only two neighboring pages on each
+side start prefetching, and an in-flight request is not restarted when its page
+is selected again. Broken local pages fall back to their remote API path.
+
+Saved site media URLs are rebound to the discovered pool without altering their
+path/query. Older filename-only metadata is refreshed through the gallery API
+rather than reconstructing media routes. New saved metadata retains opaque API
+paths through internal transport models; these internal addresses never become
+browser navigation targets. “Open in browser” resolves an actual advertised URL
+in the background. Connection details hide query parameters.
+
+## Downloads
+
+Bulk downloads now request an archive with
+`POST /api/v2/galleries/{id}/download?format=zip`, with an empty body. This requires
+a valid API key. The documented `url` and `expires_at` response is validated and
+the short-lived HTTPS URL is fetched before expiry. The key is not forwarded to
+the archive server. HTTP 503 explains that downloads are disabled; HTTP 429
+honors backoff. There is no page-by-page CDN download loop.
+
+Archive transfers have a separate ten-minute call limit and a 60-second read
+limit. Pause/cancel stops the active request. Selected page ranges are extracted
+locally from the archive; this still transfers the complete archive. Existing
+valid pages are retained on resume. ZIP entries are validated, page writes use
+temporary files, CRC failures do not publish partial files, and missing or
+unreadable pages pause the download. Paths cannot escape the gallery folder.
+Archive entries are matched to exact API basenames or numbered local pages;
+unknown archive layouts produce an explicit failure instead of guessing network
+URLs. Failure text is available in the download list and notification.
+
+## UI
+
+Browse/gallery cards, light and dark colors, list spacing and reader controls
+have been refreshed. Browse change animations are disabled to prevent flicker.
+Read/Resume opens the saved page directly. The reader has a scrollable state
+card, an eight-second slow-server notice, and visible Retry, Open in browser and
+Connection details actions. Reader chrome has better contrast and the immersive
+page badge draws above the pager. Download cards have 48dp controls, separate
+error text with a details dialog, and readable icons over image previews. Rate-limit and archive messages are included
+for all thirteen existing app locales.
+
+## Validation and limits
+
+Run with JDK 17+ and Android SDK 36:
 
 ```sh
-./gradlew assembleDebug bundleDebug :app:testPost28DebugUnitTest :app:testPre28DebugUnitTest lintPost28Debug --max-workers=4
+./gradlew assembleDebug :app:testPost28DebugUnitTest :app:testPre28DebugUnitTest lintPost28Debug --max-workers=4
 ```
 
-There are 33 regression tests per flavor, covering media URL resolution and
-API transport failures. CI runs both debug test variants and builds both APK
-flavors. Lint also reports existing dependency/accessibility warnings.
+Both APK variants pass **50 tests each (100 total)**, with no failures or skipped
+tests. Android lint reports **zero errors** (63 warnings). Regression coverage
+includes opaque paths/query encoding, changed CDN pools,
+shared/cached discovery, advertised-server failover, credential stripping,
+cancellation, status codes that must not retry, rate-limit deadlines, archive
+expiry, ZIP extraction and interruption, API error responses and reader failure
+diagnostics. Real loopback HTTP tests include an eleven-second image response
+that exceeds the old ten-second read deadline and a short-timeout control that
+must fail.
 
-Live API documentation and gallery/image requests were denied by the cloud
-network proxy before reaching nhentai.net. Therefore no claim is made that the
-website's current response schema, CDN host, or authentication contract was
-verified, or that reading was tested on a device. The existing API migration
-commit documents a March 2026 move from HTML scraping to /api/v2/; this remains
-repository evidence rather than independent confirmation of current behavior.
+Live requests from this cloud environment were rejected by its proxy before
+reaching nhentai. Contract review uses the official documentation/JSON supplied
+by the user; automated transport and archive tests use controlled fixtures.
+Successful reading on the Android 12 phone and authenticated live archive
+retrieval are still device checks, not claims made by these tests.
 
-## Install
+## APKs
 
-Use the post28 debug APK on Android 9 or later, or the pre28 debug APK on
-Android 8/8.1. These are signed development builds named **NClientV3 Debug**,
-with package com.maxwai.nclientv3.debug and version code 420704. They install
-alongside the production app and require separate login/settings. Release
-signing credentials are not included. Do not uninstall the production app to
-try the debug build.
-
-## Follow-up: gallery 688486
-
-The first build did not resolve the user’s image-loading failure on Android 12.
-The gallery works in their browser on the same connection. Version 420702 adds
-non-sensitive image-failure diagnostics and a browser action using the exact
-requested image URL. It does not claim a confirmed fix for that remaining
-failure. Diagnostic tests cover HTTP status, DNS, timeouts and absent causes.
-A similar upstream report is https://github.com/maxwai/NClientV3/issues/264;
-its DNS workaround is external evidence, not a diagnosis of this user’s device.
-
-## Timeout handling update (420703 / 4.2.7-debug3)
-
-The phone reported `Image request timed out`. APK manifest and library bytecode
-inspection confirmed that media used Glide’s default OkHttp client (10-second
-read deadline), independently of the API client. The app now explicitly registers
-ReaderGlideModule; the generated module excludes the default integration.
-
-- API: 15-second connect, 30-second read, 45-second overall call limit.
-- Images: 15-second connect, 45-second read, 75-second overall call limit.
-- Glide media dispatch: at most three asynchronous requests to one host, six overall.
-  Saved-page downloads use the same dedicated media transport.
-- Known site media requests include the site Referer and the app User-Agent.
-  External image hosts receive neither site-specific header; API authorization
-  and login cookies are not included in the dedicated media client.
-- Selected pages start before nearby pages. At most two neighboring pages on
-  each side start requests, including when an older saved view-cache preference
-  retains more fragments. Running requests are not canceled/restarted merely
-  because the same page is selected again. The default retained-page limit is two.
-- TLS and certificate validation retain OkHttp defaults. No alternate DNS,
-  speculative CDN hostname or credentials have been introduced.
-
-The reader uses a scrollable state card with visible Retry, Open in browser and
-Connection details actions; a slow-server notice appears after eight seconds.
-Reader chrome has improved contrast and the immersive page badge now draws above
-the pager. List spacing is consistent and browse item-change animations are
-removed to avoid flicker while metadata refreshes.
-
-Regression coverage includes a real local HTTP response delayed for eleven
-seconds (beyond the old deadline), a short-timeout control that must fail, scoped
-headers, finite request budgets, and existing API error/URL diagnostics tests.
-Live API/gallery checks, including a read-only check outside the sandbox, still
-received a cloud-proxy CONNECT 403 before reaching nhentai.net. This is unrelated
-to the timeout observed on the phone. Current website schema/CDN behavior and
-successful reading on the phone remain unverified; compare the exact failed
-image URL with the browser before claiming that underlying issue is resolved.
-
-## Confirmed image-host mismatch (420704 / 4.2.7-debug4)
-
-The user tested the app-generated URL outside the app. This exact URL failed:
-
-`https://i1.nhentai.net/galleries/4247333/1.webp`
-
-The same path on the canonical host loaded in the user’s browser:
-
-`https://i.nhentai.net/galleries/4247333/1.webp`
-
-This establishes a reachable-host difference for the reported image, independent
-of whether gallery metadata comes from API v2 or the website reader. It does not
-by itself establish the full API contract. The app was adding i1/t1 to relative
-paths. These defaults are corrected to i/t. Explicit absolute URLs returned by
-the API are still preserved.
-
-Stored metadata generated by older app versions is repaired only for exact
-legacy i1/t1 hosts under the configured site domain. Existing paths, extensions,
-ports and query encoding are retained. Other absolute CDN URLs are unchanged.
-
-The public reference client’s current image URL builder uses i.nhentai.net and
-lists i2, i3, i5 and i7 as alternatives:
-https://github.com/shirokun20/nhasixapp/blob/f680a214f8f3332f0761d7e172c690964a57bdda/lib/data/datasources/remote/api/nhentai_image_url_builder.dart
-
-The app now uses bounded connection/response-header failover for HTTPS GETs to
-/galleries/ on this exact known image-host family. Each known-host connection
-attempt has a five-second connect timeout; the existing 75-second overall call
-deadline spans all attempts and the body read. HTTP 404/502/503/504 can try the
-next host after closing the response. HTTP 401/403/429 are not retried. Unrelated
-hosts, API endpoints and non-GET requests are not rewritten. API authorization
-and explicit Cookie headers are removed on host changes. TLS verification stays
-enabled. Failover does not restart a partially consumed response body.
-
-Regression tests cover the reported URL, cached URL repair, preservation of
-absolute API URLs, connection fallback, request cancellation, host-list bounds,
-path/query preservation and credentials on host changes, in addition to the
-previous API/timeout coverage.
-
-The official https://nhentai.net/api/v2/docs request received a cloud-proxy
-CONNECT 403 before reaching nhentai. That response is not from nhentai and
-cannot establish an API authentication or schema change. An official image/CDN
-documentation excerpt has been requested from the user; full API-contract
-validation remains pending. The browser test verifies the working image host;
-successful reading with this APK must still be checked on the phone.
+Build **420705 / 4.2.7-debug5**, package `com.maxwai.nclientv3.debug`, installs as
+**NClientV3 Debug**. The APKs use the same signing key as the earlier debug
+builds, so they update that app and retain its settings. They install alongside
+the production app. On Android 12, use the Android 9+ APK in [apks](../apks/).

@@ -334,4 +334,8 @@
     <string name="reader_timeout">Il server delle immagini ha impiegato troppo tempo. Riprova o apri l’immagine nel browser.</string>
     <string name="reader_connection_details">Dettagli connessione</string>
     <string name="reader_loading_slow">Il server delle immagini risponde lentamente…</string>
+    <string name="reader_rate_limited">Il server chiede di attendere. Riprova più tardi.</string>
+    <string name="archive_key_required">I download richiedono una chiave API valida nelle impostazioni.</string>
+    <string name="archive_disabled">Il server ha temporaneamente disabilitato il download delle gallerie.</string>
+    <string name="archive_paused">Download in pausa: %s</string>
 </resources>

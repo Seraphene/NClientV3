@@ -21,4 +21,9 @@ public class ImageFailureTest {
     @Test public void missingCauseDoesNotCrash() {
         assertEquals("Image could not be decoded or downloaded", ImageFailure.describe(null));
     }
+    @Test public void discoveryFailureDoesNotExposePrivateResponseData() {
+        assertEquals("Image-server discovery unavailable", ImageFailure.describe(new GlideException("request",
+            new CdnRepository.Unavailable("private response", new java.io.IOException("secret")))));
+    }
+
 }

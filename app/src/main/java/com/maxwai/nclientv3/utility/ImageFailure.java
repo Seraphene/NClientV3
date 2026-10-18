@@ -12,6 +12,7 @@ public final class ImageFailure {
     public static String describe(GlideException failure) {
         List<Throwable> causes = failure == null ? Collections.emptyList() : failure.getRootCauses();
         for (Throwable cause : causes) {
+            if (cause instanceof CdnRepository.Unavailable) return "Image-server discovery unavailable";
             if (cause instanceof HttpException) {
                 int status = ((HttpException) cause).getStatusCode();
                 if (status > 0) return "HTTP " + status;

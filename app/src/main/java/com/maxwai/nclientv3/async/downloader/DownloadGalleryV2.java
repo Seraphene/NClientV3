@@ -100,7 +100,8 @@ public class DownloadGalleryV2 extends Worker {
     private void obtainData() {
         GalleryDownloaderV2 downloader = DownloadQueue.fetchForData();
         while (downloader != null) {
-            downloader.downloadGalleryData();
+            if (!downloader.downloadGalleryData())
+                downloader.pauseAfterMetadataFailure();
             Utility.threadSleep(100);
             downloader = DownloadQueue.fetchForData();
         }

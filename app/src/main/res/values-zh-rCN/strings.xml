@@ -334,4 +334,8 @@
     <string name="reader_timeout">图片服务器响应超时。请重试或在浏览器中打开图片。</string>
     <string name="reader_connection_details">连接详情</string>
     <string name="reader_loading_slow">图片服务器响应缓慢…</string>
+    <string name="reader_rate_limited">服务器要求稍候，请稍后重试。</string>
+    <string name="archive_key_required">下载需要在设置中添加有效的 API 密钥。</string>
+    <string name="archive_disabled">服务器目前已禁用图库下载。</string>
+    <string name="archive_paused">下载已暂停：%s</string>
 </resources>

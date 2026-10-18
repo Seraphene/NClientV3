@@ -18,7 +18,7 @@ public class DownloadQueue {
 
     public static GalleryDownloaderV2 fetchForData() {
         for (GalleryDownloaderManager x : downloadQueue)
-            if (!x.downloader().hasData()) return x.downloader();
+            if (!x.downloader().hasData() && x.downloader().canBeFetched()) return x.downloader();
         return null;
     }
 

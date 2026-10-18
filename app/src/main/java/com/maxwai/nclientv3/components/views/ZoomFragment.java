@@ -200,8 +200,8 @@ public class ZoomFragment extends Fragment {
                 retryAction.setVisibility(View.VISIBLE);
                 browserAction.setVisibility(url == null ? View.GONE : View.VISIBLE);
                 detailsAction.setVisibility(View.VISIBLE);
-                loadStatus.setText(failureReason.equals("Image request timed out")
-                    ? R.string.reader_timeout : R.string.page_load_failed);
+                loadStatus.setText(failureReason.equals("Image request timed out") ? R.string.reader_timeout
+                    : failureReason.equals("HTTP 429") ? R.string.reader_rate_limited : R.string.page_load_failed);
                 loadStatus.setOnClickListener(null);
                 loadStatus.setVisibility(View.VISIBLE);
             }
@@ -299,16 +299,38 @@ public class ZoomFragment extends Fragment {
 
     private void openImageInBrowser() {
         if (url == null || !isAdded()) return;
-        try {
-            startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW, url));
-        } catch (android.content.ActivityNotFoundException ignored) {
-            android.widget.Toast.makeText(requireContext(), R.string.failed, android.widget.Toast.LENGTH_SHORT).show();
-        }
+        browserAction.setEnabled(false);
+        new Thread(() -> {
+            try {
+                String resolved = com.maxwai.nclientv3.utility.ImageHttpClient.resolveForBrowser(url.toString());
+                uiHandler.post(() -> {
+                    if (!isAdded() || browserAction == null) return;
+                    browserAction.setEnabled(true);
+                    try { startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW, Uri.parse(resolved))); }
+                    catch (android.content.ActivityNotFoundException ignored) {
+                        android.widget.Toast.makeText(requireContext(), R.string.failed, android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (java.io.IOException | IllegalArgumentException error) {
+                uiHandler.post(() -> {
+                    if (!isAdded() || browserAction == null) return;
+                    browserAction.setEnabled(true);
+                    android.widget.Toast.makeText(requireContext(), R.string.failed, android.widget.Toast.LENGTH_SHORT).show();
+                });
+            }
+        }, "resolve-browser-image").start();
     }
 
     private void showFailureDetails() {
         if (!isAdded()) return;
         String address = url == null ? "Local file" : url.buildUpon().clearQuery().fragment(null).build().toString();
+        if (url != null && com.maxwai.nclientv3.utility.ImageUrlResolver.isManaged(url.toString())) {
+            String raw = com.maxwai.nclientv3.utility.ImageUrlResolver.rawPath(url.toString());
+            int query = raw.indexOf('?');
+            address = "API path: " + (query < 0 ? raw : raw.substring(0, query));
+            for (String resolved : com.maxwai.nclientv3.utility.ImageHttpClient.cachedUrls(url.toString()))
+                address += "\n" + Uri.parse(resolved).buildUpon().clearQuery().fragment(null).build();
+        }
         com.google.android.material.dialog.MaterialAlertDialogBuilder builder =
             new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.failed)

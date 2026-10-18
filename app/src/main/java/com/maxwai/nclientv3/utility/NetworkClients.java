@@ -14,7 +14,8 @@ public final class NetworkClients {
         return new OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
-            .callTimeout(45, TimeUnit.SECONDS);
+            .callTimeout(45, TimeUnit.SECONDS)
+            .addInterceptor(new RateLimitInterceptor(request -> request.url().host()));
     }
 
     public static OkHttpClient images(Supplier<String> siteHost, String userAgent) {
@@ -26,7 +27,10 @@ public final class NetworkClients {
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(45, TimeUnit.SECONDS)
             .callTimeout(75, TimeUnit.SECONDS)
-            .addInterceptor(new ImageServerFallback())
+            .addInterceptor(new RateLimitInterceptor(request -> {
+                String scope = siteHost.get();
+                return scope == null ? request.url().host() : scope;
+            }))
             .addInterceptor(chain -> {
                 Request request = chain.request();
                 // No API authorization or login cookies are attached to media requests.

@@ -358,11 +358,23 @@ public class LocalAdapter extends MultichoiceAdapter<Object, LocalAdapter.ViewHo
                 break;
         }
         holder.progress.setText(context.getString(R.string.percentage_format, percentage));
+        String error = downloader.getLastError();
+        holder.downloadError.setText(error);
+        holder.downloadError.setVisibility(error == null ? View.GONE : View.VISIBLE);
+        holder.downloadError.setOnClickListener(error == null ? null : v ->
+            new MaterialAlertDialogBuilder(context).setTitle(R.string.failed).setMessage(error)
+                .setPositiveButton(android.R.string.ok, null).show());
         holder.progress.setVisibility(downloader.getStatus() == GalleryDownloaderV2.Status.NOT_STARTED ? View.GONE : View.VISIBLE);
         holder.progressBar.setProgress(percentage);
         holder.progressBar.setIndeterminate(downloader.getStatus() == GalleryDownloaderV2.Status.NOT_STARTED);
         Global.setTint(context, holder.playButton.getDrawable());
         Global.setTint(context, holder.cancelButton.getDrawable());
+        if (holder.layout != null) { // Compact download cards have a dark image overlay.
+            holder.playButton.setColorFilter(android.graphics.Color.WHITE);
+            holder.cancelButton.setColorFilter(android.graphics.Color.WHITE);
+        }
+        holder.playButton.setContentDescription(context.getString(downloader.getStatus() == GalleryDownloaderV2.Status.DOWNLOADING
+            ? R.string.stop_download : R.string.start_download));
     }
 
     private void removeDownloader(GalleryDownloaderV2 downloader) {
@@ -529,7 +541,7 @@ public class LocalAdapter extends MultichoiceAdapter<Object, LocalAdapter.ViewHo
     public static class ViewHolder extends RecyclerView.ViewHolder {
         final ImageView imgView;
         final View overlay;
-        final TextView title, pages, flag, progress;
+        final TextView title, pages, flag, progress, downloadError;
         final ViewGroup layout;
         final ImageButton playButton, cancelButton;
         final ProgressBar progressBar;
@@ -546,6 +558,7 @@ public class LocalAdapter extends MultichoiceAdapter<Object, LocalAdapter.ViewHo
             overlay = v.findViewById(R.id.overlay);
             //Downloader
             progress = itemView.findViewById(R.id.progress);
+            downloadError = itemView.findViewById(R.id.download_error);
             progressBar = itemView.findViewById(R.id.progressBar);
             playButton = itemView.findViewById(R.id.playButton);
             cancelButton = itemView.findViewById(R.id.cancelButton);

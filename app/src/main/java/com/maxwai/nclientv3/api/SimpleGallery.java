@@ -60,7 +60,12 @@ public class SimpleGallery extends GenericGallery {
         title = c.getString(c.getColumnIndex(Queries.HistoryTable.TITLE));
         id = c.getInt(c.getColumnIndex(Queries.HistoryTable.ID));
         mediaId = c.getInt(c.getColumnIndex(Queries.HistoryTable.MEDIAID));
-        thumbnail = Uri.parse(c.getString(c.getColumnIndex(Queries.HistoryTable.THUMB)));
+        String saved = c.getString(c.getColumnIndex(Queries.HistoryTable.THUMB));
+        // Ancient history stored only a file type; refresh metadata on opening rather than guessing a CDN route.
+        thumbnail = saved != null && (saved.startsWith("https:") || saved.startsWith("//")
+            || saved.startsWith("file:") || saved.startsWith("content:"))
+            ? Uri.parse(com.maxwai.nclientv3.utility.ImageUrlResolver.restoreStored(saved, com.maxwai.nclientv3.utility.Utility.getHost(), true))
+            : Uri.EMPTY;
     }
 
     private SimpleGallery(String title, int id, int mediaId, Uri thumbnail, Language language, TagList tags) {
@@ -144,7 +149,7 @@ public class SimpleGallery extends GenericGallery {
             }
         }
         if (context != null && id > Global.getMaxId()) Global.updateMaxId(context, id);
-        return new SimpleGallery(title, id, mediaId, Uri.parse(com.maxwai.nclientv3.utility.ImageUrlResolver.resolve(thumbPath, Utility.getHost(), true)), language, tags);
+        return new SimpleGallery(title, id, mediaId, Uri.parse(com.maxwai.nclientv3.utility.ImageUrlResolver.resolve(thumbPath, true)), language, tags);
     }
 
     public boolean hasTags(Collection<Tag> tags) {

@@ -1,31 +1,25 @@
 # Installable development APKs
 
-- **Android 9 and newer:** [Download APK](NClientV3-4.2.7-reader-fix-android9plus.apk)
+- **Android 9 and newer (including Android 12):** [Download APK](NClientV3-4.2.7-reader-fix-android9plus.apk)
 - **Android 8 / 8.1:** [Download APK](NClientV3-4.2.7-reader-fix-android8.apk)
 
-On GitHub, open the APK and choose **Download raw file**. Open the downloaded
-file on your phone to install it. Build **420704 / 4.2.7-debug4** installs over
-NClientV3 Debug and uses the same signing key as the previous builds. It keeps
-that app’s settings. It installs alongside the production app; do not uninstall
-the production app to try it.
+On GitHub, open the APK and choose **Download raw file**, then open the file on
+your phone. Build **420705 / 4.2.7-debug5** updates **NClientV3 Debug**, retains its
+settings and uses the same signing key as the previous debug builds. It installs
+alongside the production app.
 
-## Image host correction
+This build replaces the earlier fixed-host revision with the documented
+`/api/v2/cdn` server discovery and exact API media paths. It adds bounded failover
+among advertised servers, HTTP 429 backoff and official ZIP archive downloads.
+The loading/retry controls and modernized UI from the earlier updates remain.
 
-For gallery 688486, the user confirmed that
-`https://i1.nhentai.net/galleries/4247333/1.webp` fails in the browser while
-`https://i.nhentai.net/galleries/4247333/1.webp` loads. The image path and file
-extension are identical.
+Public reading needs no API key according to the supplied docs. Gallery archive
+downloads require a valid API key in Settings and must be enabled by the server.
 
-This build uses `i.nhentai.net` and `t.nhentai.net` for relative API media paths,
-repairs saved legacy i1/t1 URLs, and adds bounded connection failover among the
-known public image hosts. Absolute URLs supplied by the API remain authoritative.
-The previous reader UI, finite timeouts and request-prioritization changes remain.
+Both Android variants pass 50 tests each (100 total); lint reports zero errors. APK signing identities
+are checked against the previous builds. Verify file checksums with
+`sha256sum -c SHA256SUMS`.
 
-Both APK variants pass 33 regression tests each. APK signatures and checksums
-are verified. See [technical details](../docs/reader-fixes.md).
-
-The official API documentation request is blocked by the cloud proxy before it
-reaches nhentai. The working image URL is user-verified; the full current API
-contract and this APK’s reading behavior on the phone are not yet verified.
-
-Verify downloaded files with `sha256sum -c SHA256SUMS`.
+Live requests remain blocked by the cloud proxy. The API contract was reviewed
+against the official documentation supplied by the user; reading on the phone
+still needs confirmation. See [technical details](../docs/reader-fixes.md).

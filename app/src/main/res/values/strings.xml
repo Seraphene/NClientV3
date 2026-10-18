@@ -427,4 +427,8 @@
     <string name="reader_timeout">The image server took too long to respond. Retry this page or open it in your browser.</string>
     <string name="reader_connection_details">Connection details</string>
     <string name="reader_loading_slow">The image server is responding slowly…</string>
+    <string name="reader_rate_limited">The server asked us to wait. Please try again later.</string>
+    <string name="archive_key_required">Downloads require a valid API key in Settings.</string>
+    <string name="archive_disabled">Gallery downloads are currently disabled by the server.</string>
+    <string name="archive_paused">Download paused: %s</string>
 </resources>

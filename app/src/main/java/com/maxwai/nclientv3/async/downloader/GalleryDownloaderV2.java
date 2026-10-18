@@ -4,12 +4,22 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.maxwai.nclientv3.R;
 import com.maxwai.nclientv3.api.InspectorV3;
+import com.maxwai.nclientv3.api.ApiResponse;
+import com.maxwai.nclientv3.settings.AuthStore;
+import com.maxwai.nclientv3.files.GalleryFolder;
+import com.maxwai.nclientv3.utility.ArchiveTicket;
+import com.maxwai.nclientv3.utility.GalleryArchiveExtractor;
+import com.maxwai.nclientv3.utility.ImageHttpClient;
+import com.maxwai.nclientv3.utility.ImageUrlResolver;
 import com.maxwai.nclientv3.api.components.Gallery;
 import com.maxwai.nclientv3.api.local.LocalGallery;
 import com.maxwai.nclientv3.async.database.Queries;
@@ -22,7 +32,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import okhttp3.Call;
+import okhttp3.RequestBody;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Pattern;
@@ -37,7 +53,9 @@ public class GalleryDownloaderV2 {
     private final int id;
     private final CopyOnWriteArraySet<DownloadObserver> observers = new CopyOnWriteArraySet<>();
     private final List<PageContainer> urls = new ArrayList<>();
-    private Status status = Status.NOT_STARTED;
+    private volatile Status status = Status.NOT_STARTED;
+    private volatile Call activeCall;
+    private volatile String lastError;
     private String title;
     private Uri thumbnail;
     private int start = -1, end = -1;
@@ -108,7 +126,8 @@ public class GalleryDownloaderV2 {
     }
 
     public int getPercentage() {
-        if (gallery == null || urls.isEmpty()) return 0;
+        if (status == Status.FINISHED) return 100;
+        if (gallery == null || !initialized) return 0;
         return ((getTotalPage() - urls.size()) * 100) / getTotalPage();
     }
 
@@ -191,9 +210,17 @@ public class GalleryDownloaderV2 {
                 setGallery(g);
             return g.isValid();
         } catch (Exception e) {
+            lastError = e.getMessage();
             LogUtility.e("Error while downloading", e);
             return false;
         }
+    }
+
+    void pauseAfterMetadataFailure() {
+        if (status == Status.CANCELED) return;
+        if (lastError == null) lastError = context.getString(R.string.failed);
+        setStatus(Status.PAUSED);
+        onPause();
     }
 
     public Uri getThumbnail() {
@@ -201,16 +228,20 @@ public class GalleryDownloaderV2 {
     }
 
     public boolean canBeFetched() {
-        return status != Status.FINISHED && status != Status.PAUSED;
+        return status == Status.NOT_STARTED;
     }
 
     public Status getStatus() {
         return status;
     }
 
+    public String getLastError() { return lastError; }
+
     public void setStatus(Status status) {
         if (this.status == status) return;
         this.status = status;
+        Call running = activeCall;
+        if ((status == Status.PAUSED || status == Status.CANCELED) && running != null) running.cancel();
         if (status == Status.CANCELED) {
             LogUtility.d("Delete 95: " + id);
             onCancel();
@@ -220,27 +251,63 @@ public class GalleryDownloaderV2 {
     }
 
     public void download() {
-        initDownload();
+        if (status == Status.CANCELED || status == Status.PAUSED) return;
+        lastError = null;
         onStart();
-        while (!urls.isEmpty()) {
-            downloadPage(urls.get(0));
-            Utility.threadSleep(50);
-            if (status == Status.PAUSED) {
-                onPause();
-                return;
+        try {
+            initDownload();
+            if (urls.isEmpty()) { onEnd(); return; }
+            if (!AuthStore.hasValidApiKey(context)) throw new IOException(context.getString(R.string.archive_key_required));
+            Request request = new Request.Builder()
+                .url(Utility.getApiBaseUrl() + "galleries/" + id + "/download?format=zip")
+                .post(RequestBody.create(new byte[0], null)).build();
+            ArchiveTicket ticket;
+            activeCall = Global.getClient(context).newCall(request);
+            if (status != Status.DOWNLOADING) { activeCall.cancel(); activeCall = null; return; }
+            try (Response response = activeCall.execute()) {
+                if (response.code() == 503) throw new IOException(context.getString(R.string.archive_disabled));
+                ticket = ArchiveTicket.parse(ApiResponse.read(response), System.currentTimeMillis() / 1000);
+            } finally { activeCall = null; }
+            if (status != Status.DOWNLOADING) return;
+            Set<Integer> wanted = new HashSet<>();
+            Map<String, Integer> names = new HashMap<>();
+            for (PageContainer page : urls) {
+                wanted.add(page.page);
+                String path = java.net.URI.create(ImageUrlResolver.filePath(page.url.toString())).getPath();
+                names.put(path.substring(path.lastIndexOf('/') + 1), page.page);
             }
-            if (status == Status.CANCELED) {
-                onCancel();
-                return;
+            if (ticket.expiresAt <= System.currentTimeMillis() / 1000) throw new IOException("Archive link expired. Retry the download.");
+            // Archive URLs are supplied by the API; credentials stay on the API request.
+            activeCall = ImageHttpClient.get().newBuilder().readTimeout(60, TimeUnit.SECONDS)
+                .callTimeout(10, TimeUnit.MINUTES).build()
+                .newCall(new Request.Builder().url(ticket.url).build());
+            if (status != Status.DOWNLOADING) { activeCall.cancel(); return; }
+            try (Response response = activeCall.execute()) {
+                if (!response.isSuccessful()) throw new IOException("Archive request failed (HTTP " + response.code() + ")");
+                if (response.body() == null) throw new IOException("Empty archive response");
+                GalleryArchiveExtractor.extract(response.body().byteStream(), folder, wanted, names,
+                    () -> status != Status.DOWNLOADING, (page, file) -> {
+                        if (isCorrupted(file)) {
+                            java.nio.file.Files.deleteIfExists(file.toPath());
+                            throw new IOException("Archive contains an unreadable page");
+                        }
+                        urls.removeIf(item -> item.page == page);
+                        onUpdate();
+                    });
+            } finally { activeCall = null; }
+            if (status == Status.DOWNLOADING) onEnd();
+        } catch (IOException | IllegalArgumentException error) {
+            if (status == Status.CANCELED) return;
+            if (status != Status.PAUSED) {
+                lastError = error.getMessage();
+                setStatus(Status.PAUSED);
+                new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context,
+                    context.getString(R.string.archive_paused, lastError), Toast.LENGTH_LONG).show());
             }
-        }
-        onEnd();
-    }
-
-    private void downloadPage(PageContainer page) {
-        if (savePage(page)) {
-            urls.remove(page);
-            onUpdate();
+            LogUtility.e("Archive download paused", error);
+        } finally {
+            activeCall = null;
+            if (status == Status.PAUSED) onPause();
         }
     }
 
@@ -257,52 +324,23 @@ public class GalleryDownloaderV2 {
         return x;
     }
 
-    private boolean savePage(PageContainer page) {
-        if (page == null) return true;
-        File filePath = new File(folder, page.getPageName());
-        LogUtility.d("Saving into: " + filePath + "," + page.url);
-        if (filePath.exists() && !isCorrupted(filePath)) return true;
-        try (Response r = com.maxwai.nclientv3.utility.ImageHttpClient.get().newCall(new Request.Builder().url(page.url.toString()).build()).execute()) {
-            if (r.code() != 200) {
-                return false;
-            }
-            //noinspection DataFlowIssue
-            long expectedSize = Integer.parseInt(r.header("Content-Length", "-1"));
-            long len = r.body().contentLength();
-            if (len < 0 || expectedSize != len) {
-                return false;
-            }
-            long written = Utility.writeStreamToFile(r.body().byteStream(), filePath);
-            if (written != len) {
-                //noinspection ResultOfMethodCallIgnored
-                filePath.delete();
-                return false;
-            }
-            return true;
-        } catch (IOException | NumberFormatException e) {
-            LogUtility.e(e, e);
-        }
-        return false;
-    }
-
-
-    public void initDownload() {
+    public synchronized void initDownload() {
         if (initialized) return;
-        initialized = true;
         createFolder();
         createPages();
         checkPages();
+        initialized = true;
     }
 
     private void checkPages() {
-        File filePath;
+        GalleryFolder existing = new GalleryFolder(folder);
         for (int i = 0; i < urls.size(); i++) {
             if (urls.get(i) == null) {
                 urls.remove(i--);
                 continue;
             }
-            filePath = new File(folder, urls.get(i).getPageName());
-            if (filePath.exists() && !isCorrupted(filePath))
+            File filePath = existing.getPage(urls.get(i).page);
+            if (filePath != null && filePath.isFile() && !isCorrupted(filePath))
                 urls.remove(i--);
         }
     }
@@ -314,8 +352,8 @@ public class GalleryDownloaderV2 {
 
     private void createFolder() {
         folder = findFolder(Global.DOWNLOADFOLDER, title, id);
-        if (!folder.mkdirs()) {
-            return;
+        if (!folder.exists() && !folder.mkdirs()) {
+            throw new IllegalArgumentException("Unable to create download folder");
         }
         try {
             writeNoMedia();
@@ -368,9 +406,6 @@ public class GalleryDownloaderV2 {
             this.url = url;
         }
 
-        public String getPageName() {
-            String fileName = Objects.requireNonNull(url.getLastPathSegment());
-            return String.format(Locale.US, "%03d.%s", page, fileName.substring(fileName.indexOf('.') + 1));
-        }
+
     }
 }

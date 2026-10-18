@@ -53,6 +53,8 @@ public class GalleryDownloaderManager {
 
         @Override
         public void triggerPauseDownload(GalleryDownloaderV2 downloader) {
+            if (notification != null && downloader.getLastError() != null)
+                notification.setContentText(downloader.getLastError());
             notificationUpdate();
         }
     };

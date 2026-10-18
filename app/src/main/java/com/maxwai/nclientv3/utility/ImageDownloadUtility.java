@@ -47,7 +47,7 @@ public class ImageDownloadUtility {
     }
 
     public static void downloadPage(Activity activity, ImageView imageView, Gallery gallery, int page, boolean shouldFull) {
-        shouldFull = gallery.getHighPage(page).toString().endsWith("gif") || shouldFull;
+        shouldFull = ImageUrlResolver.filePath(gallery.getHighPage(page).toString()).endsWith("gif") || shouldFull;
         loadImageOp(activity, imageView, gallery, page, 0, shouldFull);
     }
 

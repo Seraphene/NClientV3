@@ -334,4 +334,8 @@
     <string name="reader_timeout">画像サーバーの応答がタイムアウトしました。再試行するか、ブラウザーで画像を開いてください。</string>
     <string name="reader_connection_details">接続の詳細</string>
     <string name="reader_loading_slow">画像サーバーの応答が遅れています…</string>
+    <string name="reader_rate_limited">サーバーが待機を要求しています。しばらくしてから再試行してください。</string>
+    <string name="archive_key_required">ダウンロードには設定で有効なAPIキーが必要です。</string>
+    <string name="archive_disabled">サーバーでギャラリーのダウンロードが現在無効になっています。</string>
+    <string name="archive_paused">ダウンロードを一時停止しました: %s</string>
 </resources>

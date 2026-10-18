@@ -16,7 +16,7 @@ val keystoreProperties = Properties().apply {
 val majorVersion = 4
 val minorVersion = 2
 val patchVersion = 7
-val buildVersion = 4
+val buildVersion = 5
 val version = "${majorVersion}.${minorVersion}.${patchVersion}"
 
 android {
@@ -64,7 +64,7 @@ android {
         }
         getByName("debug") {
             applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug4"
+            versionNameSuffix = "-debug5"
             resValue("string", "app_name", "NClientV3 Debug")
         }
         create("RelWithDebInfo") {
@@ -148,6 +148,7 @@ androidComponents {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20250517")
 // Android
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("androidx.cardview:cardview:1.0.0")
