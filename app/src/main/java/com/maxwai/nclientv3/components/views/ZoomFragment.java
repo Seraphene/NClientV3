@@ -55,6 +55,13 @@ public class ZoomFragment extends Fragment {
     private Uri url;
     private int degree = 0;
     private boolean completedDownload = false;
+    private boolean requestInFlight = false;
+    private android.widget.Button retryAction, browserAction, detailsAction;
+    private View statePanel;
+    private final android.os.Handler uiHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private final Runnable slowNotice = () -> {
+        if (requestInFlight && loadStatus != null) loadStatus.setText(R.string.reader_loading_slow);
+    };
     private String failureReason = "";
     private View.OnClickListener clickListener;
     private OnZoomChangeListener zoomChangeListener;
@@ -69,6 +76,7 @@ public class ZoomFragment extends Fragment {
         args.putString("URL", gallery.isLocal() ? null : (Global.getDownloadPolicy() == Global.DataUsageType.THUMBNAIL
             ? ((Gallery) gallery).getGalleryData().getPage(page).getThumbnailPath()
             : ((Gallery) gallery).getHighPage(page)).toString());
+        args.putInt("PAGE", page);
         args.putParcelable("FOLDER", directory == null ? null : directory.getPage(page + 1));
         ZoomFragment fragment = new ZoomFragment();
         fragment.setArguments(args);
@@ -107,6 +115,10 @@ public class ZoomFragment extends Fragment {
         photoView = rootView.findViewById(R.id.image);
         retryButton = rootView.findViewById(R.id.imageView);
         loadingIndicator = rootView.findViewById(R.id.reader_loading);
+        statePanel = rootView.findViewById(R.id.reader_state);
+        retryAction = rootView.findViewById(R.id.reader_retry);
+        browserAction = rootView.findViewById(R.id.reader_browser);
+        detailsAction = rootView.findViewById(R.id.reader_details);
         loadStatus = rootView.findViewById(R.id.reader_status);
         //read arguments
         String str = getArguments().getString("URL");
@@ -135,9 +147,14 @@ public class ZoomFragment extends Fragment {
             });
 
         photoView.setMaximumScale(MAX_SCALE);
-        retryButton.setOnClickListener(v -> loadImage());
+        retryAction.setOnClickListener(v -> loadImage(Priority.IMMEDIATE));
+        browserAction.setOnClickListener(v -> openImageInBrowser());
+        detailsAction.setOnClickListener(v -> showFailureDetails());
+        rootView.setOnClickListener(v -> { if (clickListener != null) clickListener.onClick(v); });
         createTarget();
-        loadImage();
+        int distance = Math.abs(activity.getCurrentPage() - getArguments().getInt("PAGE"));
+        if (distance <= activity.getRequestWindow())
+            loadImage(distance == 0 ? Priority.IMMEDIATE : Priority.LOW);
         return rootView;
     }
 
@@ -159,9 +176,16 @@ public class ZoomFragment extends Fragment {
 
             @Override
             public void onLoadStarted(@Nullable Drawable placeholder) {
+                requestInFlight = true;
                 super.onLoadStarted(placeholder);
                 applyDrawable(photoView, retryButton, placeholder);
+                statePanel.setVisibility(View.VISIBLE);
+                retryAction.setVisibility(View.GONE);
+                browserAction.setVisibility(View.GONE);
+                detailsAction.setVisibility(View.GONE);
                 loadingIndicator.setVisibility(View.VISIBLE);
+                uiHandler.removeCallbacks(slowNotice);
+                uiHandler.postDelayed(slowNotice, 8000);
                 loadStatus.setText(R.string.page_loading);
                 loadStatus.setVisibility(View.VISIBLE);
             }
@@ -171,8 +195,14 @@ public class ZoomFragment extends Fragment {
                 super.onLoadFailed(errorDrawable);
                 applyDrawable(retryButton, photoView, errorDrawable);
                 loadingIndicator.setVisibility(View.GONE);
-                loadStatus.setText(getString(R.string.page_load_failed) + "\n" + failureReason);
-                loadStatus.setOnClickListener(v -> showFailureDetails());
+                uiHandler.removeCallbacks(slowNotice);
+                statePanel.setVisibility(View.VISIBLE);
+                retryAction.setVisibility(View.VISIBLE);
+                browserAction.setVisibility(url == null ? View.GONE : View.VISIBLE);
+                detailsAction.setVisibility(View.VISIBLE);
+                loadStatus.setText(failureReason.equals("Image request timed out")
+                    ? R.string.reader_timeout : R.string.page_load_failed);
+                loadStatus.setOnClickListener(null);
                 loadStatus.setVisibility(View.VISIBLE);
             }
 
@@ -181,12 +211,17 @@ public class ZoomFragment extends Fragment {
                 applyDrawable(photoView, retryButton, resource);
                 loadingIndicator.setVisibility(View.GONE);
                 loadStatus.setVisibility(View.GONE);
+                statePanel.setVisibility(View.GONE);
+                uiHandler.removeCallbacks(slowNotice);
                 if (resource instanceof Animatable)
                     ((Animatable) resource).start();
             }
 
             @Override
             public void onLoadCleared(@Nullable Drawable placeholder) {
+                requestInFlight = false;
+                uiHandler.removeCallbacks(slowNotice);
+                statePanel.setVisibility(View.GONE);
                 super.onLoadCleared(placeholder);
                 applyDrawable(photoView, retryButton, placeholder);
             }
@@ -206,12 +241,13 @@ public class ZoomFragment extends Fragment {
     }
 
     public void loadImage(Priority priority) {
-        if (completedDownload) return;
+        if (completedDownload || requestInFlight || photoView == null) return;
         failureReason = "";
         loadStatus.setOnClickListener(null);
         cancelRequest();
         RequestBuilder<Drawable> dra = loadPage();
         if (dra == null) return;
+        requestInFlight = true;
         dra
             .transform(new com.bumptech.glide.load.MultiTransformation<>(
                 java.util.Arrays.asList(new com.bumptech.glide.load.resource.bitmap.FitCenter(), new Rotate(degree))))
@@ -221,6 +257,8 @@ public class ZoomFragment extends Fragment {
             .addListener(new RequestListener<>() {
                 @Override
                 public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
+                    requestInFlight = false;
+                    uiHandler.removeCallbacks(slowNotice);
                     LogUtility.e("Reader image load failed", e);
                     failureReason = com.maxwai.nclientv3.utility.ImageFailure.describe(e);
                     if (pageFile != null && url != null) {
@@ -233,6 +271,7 @@ public class ZoomFragment extends Fragment {
 
                 @Override
                 public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model, Target<Drawable> target, @NonNull DataSource dataSource, boolean isFirstResource) {
+                    requestInFlight = false;
                     completedDownload = true;
                     return false;
                 }
@@ -258,6 +297,15 @@ public class ZoomFragment extends Fragment {
         return request.override(SIZE_ORIGINAL);
     }
 
+    private void openImageInBrowser() {
+        if (url == null || !isAdded()) return;
+        try {
+            startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW, url));
+        } catch (android.content.ActivityNotFoundException ignored) {
+            android.widget.Toast.makeText(requireContext(), R.string.failed, android.widget.Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void showFailureDetails() {
         if (!isAdded()) return;
         String address = url == null ? "Local file" : url.buildUpon().clearQuery().fragment(null).build().toString();
@@ -267,13 +315,8 @@ public class ZoomFragment extends Fragment {
                 .setMessage(failureReason + "\n\n" + address)
                 .setPositiveButton(R.string.retry, (dialog, which) -> loadImage())
                 .setNegativeButton(android.R.string.cancel, null);
-        if (url != null) builder.setNeutralButton(R.string.open_in_browser, (dialog, which) -> {
-            try {
-                startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW, url));
-            } catch (android.content.ActivityNotFoundException ignored) {
-                android.widget.Toast.makeText(requireContext(), R.string.failed, android.widget.Toast.LENGTH_SHORT).show();
-            }
-        });
+        if (url != null) builder.setNeutralButton(R.string.open_in_browser,
+            (dialog, which) -> openImageInBrowser());
         androidx.appcompat.app.AlertDialog dialog = builder.show();
         android.widget.TextView message = dialog.findViewById(android.R.id.message);
         if (message != null) message.setTextIsSelectable(true);
@@ -285,6 +328,8 @@ public class ZoomFragment extends Fragment {
 
     public void cancelRequest() {
         if (completedDownload) return;
+        requestInFlight = false;
+        uiHandler.removeCallbacks(slowNotice);
         if (photoView != null && target != null) {
             RequestManager manager = GlideX.with(photoView);
             if (manager != null) manager.clear(target);
@@ -294,11 +339,14 @@ public class ZoomFragment extends Fragment {
     private void updateDegree() {
         degree = (degree + 270) % 360;
         completedDownload = false;
-        loadImage();
+        cancelRequest();
+        loadImage(Priority.IMMEDIATE);
     }
 
     @Override
     public void onDestroyView() {
+        uiHandler.removeCallbacks(slowNotice);
+        requestInFlight = false;
         if (photoView != null && target != null) {
             RequestManager manager = GlideX.with(photoView);
             if (manager != null) manager.clear(target);
@@ -306,6 +354,13 @@ public class ZoomFragment extends Fragment {
         completedDownload = false;
         target = null;
         photoView = null;
+        retryButton = null;
+        loadingIndicator = null;
+        loadStatus = null;
+        statePanel = null;
+        retryAction = null;
+        browserAction = null;
+        detailsAction = null;
         super.onDestroyView();
     }
 

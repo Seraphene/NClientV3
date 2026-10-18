@@ -331,4 +331,7 @@
     <string name="page_load_failed">Impossibile caricare la pagina. Controlla la connessione e riprova.</string>
     <string name="page_load_retry">Pagina non caricata · Tocca per riprovare</string>
     <string name="read_gallery">Leggi</string>
+    <string name="reader_timeout">Il server delle immagini ha impiegato troppo tempo. Riprova o apri l’immagine nel browser.</string>
+    <string name="reader_connection_details">Dettagli connessione</string>
+    <string name="reader_loading_slow">Il server delle immagini risponde lentamente…</string>
 </resources>

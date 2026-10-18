@@ -331,4 +331,7 @@
     <string name="page_load_failed">ページを読み込めませんでした。接続を確認して再試行してください。</string>
     <string name="page_load_retry">読み込み失敗 · タップして再試行</string>
     <string name="read_gallery">読む</string>
+    <string name="reader_timeout">画像サーバーの応答がタイムアウトしました。再試行するか、ブラウザーで画像を開いてください。</string>
+    <string name="reader_connection_details">接続の詳細</string>
+    <string name="reader_loading_slow">画像サーバーの応答が遅れています…</string>
 </resources>

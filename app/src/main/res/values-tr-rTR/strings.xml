@@ -331,4 +331,7 @@
     <string name="page_load_failed">Sayfa yüklenemedi. Bağlantınızı kontrol edip yeniden deneyin.</string>
     <string name="page_load_retry">Sayfa yüklenemedi · Yeniden denemek için dokunun</string>
     <string name="read_gallery">Oku</string>
+    <string name="reader_timeout">Görüntü sunucusu çok uzun süre yanıt vermedi. Yeniden deneyin veya görüntüyü tarayıcıda açın.</string>
+    <string name="reader_connection_details">Bağlantı ayrıntıları</string>
+    <string name="reader_loading_slow">Görüntü sunucusu yavaş yanıt veriyor…</string>
 </resources>

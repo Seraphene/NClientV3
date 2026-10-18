@@ -334,20 +334,29 @@ public class ZoomActivity extends GeneralActivity {
         return getActualFragment(mViewPager.getCurrentItem());
     }
 
+    public int getCurrentPage() {
+        return mViewPager == null ? actualPage : mViewPager.getCurrentItem();
+    }
+
+    public int getRequestWindow() {
+        return Math.min(2, Global.getOffscreenLimit());
+    }
+
     private void makeNearRequests(int newPage) {
-        ZoomFragment fragment;
-        int offScreenLimit = Global.getOffscreenLimit();
-        for (int i = newPage - offScreenLimit; i <= newPage + offScreenLimit; i++) {
-            fragment = getActualFragment(i);
-            if (fragment == null) continue;
-            if (i == newPage) fragment.loadImage(Priority.IMMEDIATE);
-            else fragment.loadImage();
+        ZoomFragment selected = getActualFragment(newPage);
+        if (selected != null) selected.loadImage(Priority.IMMEDIATE);
+        int limit = getRequestWindow();
+        for (int distance = 1; distance <= limit; distance++) {
+            ZoomFragment next = getActualFragment(newPage + distance);
+            ZoomFragment previous = getActualFragment(newPage - distance);
+            if (next != null) next.loadImage(Priority.LOW);
+            if (previous != null) previous.loadImage(Priority.LOW);
         }
     }
 
     private void clearFarRequests(int oldPage, int newPage) {
         ZoomFragment fragment;
-        int offScreenLimit = Global.getOffscreenLimit();
+        int offScreenLimit = getRequestWindow();
         for (int i = oldPage - offScreenLimit; i <= oldPage + offScreenLimit; i++) {
             if (i >= newPage - offScreenLimit && i <= newPage + offScreenLimit) continue;
             fragment = getActualFragment(i);
@@ -390,9 +399,9 @@ public class ZoomActivity extends GeneralActivity {
         view.setVisibility(View.VISIBLE);
         cornerPageViewer.setVisibility(View.GONE);
 
-        pageSwitcher.animate().alpha(isHidden ? 0f : 0.75f).setDuration(150).setListener(adapter).start();
-        view.animate().alpha(isHidden ? 0f : 0.75f).setDuration(150).setListener(adapter).start();
-        toolbar.animate().alpha(isHidden ? 0f : 0.75f).setDuration(150).setListener(adapter).start();
+        pageSwitcher.animate().alpha(isHidden ? 0f : 0.96f).setDuration(150).setListener(adapter).start();
+        view.animate().alpha(isHidden ? 0f : 0.96f).setDuration(150).setListener(adapter).start();
+        toolbar.animate().alpha(isHidden ? 0f : 0.96f).setDuration(150).setListener(adapter).start();
     }
 
     private void applyVisibilityFlag() {

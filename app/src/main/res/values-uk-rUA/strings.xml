@@ -331,4 +331,7 @@
     <string name="page_load_failed">Не вдалося завантажити сторінку. Перевірте з’єднання та повторіть спробу.</string>
     <string name="page_load_retry">Помилка завантаження · Натисніть, щоб повторити</string>
     <string name="read_gallery">Читати</string>
+    <string name="reader_timeout">Сервер зображень не відповів вчасно. Повторіть спробу або відкрийте зображення в браузері.</string>
+    <string name="reader_connection_details">Відомості про з’єднання</string>
+    <string name="reader_loading_slow">Сервер зображень відповідає повільно…</string>
 </resources>

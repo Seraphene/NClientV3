@@ -424,4 +424,7 @@
     <string name="page_load_failed">This page couldn’t load. Check your connection, then tap Retry.</string>
     <string name="page_load_retry">Page couldn’t load · Tap to retry</string>
     <string name="read_gallery">Read</string>
+    <string name="reader_timeout">The image server took too long to respond. Retry this page or open it in your browser.</string>
+    <string name="reader_connection_details">Connection details</string>
+    <string name="reader_loading_slow">The image server is responding slowly…</string>
 </resources>

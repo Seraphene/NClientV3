@@ -331,4 +331,7 @@
     <string name="page_load_failed">تعذر تحميل الصفحة. تحقق من اتصالك ثم اضغط على إعادة المحاولة.</string>
     <string name="page_load_retry">تعذر تحميل الصفحة · اضغط لإعادة المحاولة</string>
     <string name="read_gallery">قراءة</string>
+    <string name="reader_timeout">استغرقت استجابة خادم الصور وقتًا طويلًا. أعد المحاولة أو افتح الصفحة في المتصفح.</string>
+    <string name="reader_connection_details">تفاصيل الاتصال</string>
+    <string name="reader_loading_slow">خادم الصور يستجيب ببطء…</string>
 </resources>

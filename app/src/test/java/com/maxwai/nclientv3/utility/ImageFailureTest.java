@@ -15,6 +15,9 @@ public class ImageFailureTest {
     @Test public void timeoutIsIdentified() {
         assertEquals("Image request timed out", ImageFailure.describe(new GlideException("request", new java.net.SocketTimeoutException())));
     }
+    @Test public void overallCallTimeoutIsIdentified() {
+        assertEquals("Image request timed out", ImageFailure.describe(new GlideException("request", new java.io.InterruptedIOException("timeout"))));
+    }
     @Test public void missingCauseDoesNotCrash() {
         assertEquals("Image could not be decoded or downloaded", ImageFailure.describe(null));
     }

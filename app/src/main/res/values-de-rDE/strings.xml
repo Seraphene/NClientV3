@@ -331,4 +331,7 @@
     <string name="page_load_failed">Die Seite konnte nicht geladen werden. Prüfe deine Verbindung und tippe auf Wiederholen.</string>
     <string name="page_load_retry">Seite nicht geladen · Zum Wiederholen tippen</string>
     <string name="read_gallery">Lesen</string>
+    <string name="reader_timeout">Der Bildserver hat zu lange gebraucht. Versuche es erneut oder öffne das Bild im Browser.</string>
+    <string name="reader_connection_details">Verbindungsdetails</string>
+    <string name="reader_loading_slow">Der Bildserver antwortet langsam…</string>
 </resources>

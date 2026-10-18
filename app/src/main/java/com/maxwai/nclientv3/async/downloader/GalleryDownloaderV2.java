@@ -262,7 +262,7 @@ public class GalleryDownloaderV2 {
         File filePath = new File(folder, page.getPageName());
         LogUtility.d("Saving into: " + filePath + "," + page.url);
         if (filePath.exists() && !isCorrupted(filePath)) return true;
-        try (Response r = Global.getClient(context).newCall(new Request.Builder().url(page.url.toString()).build()).execute()) {
+        try (Response r = com.maxwai.nclientv3.utility.ImageHttpClient.get().newCall(new Request.Builder().url(page.url.toString()).build()).execute()) {
             if (r.code() != 200) {
                 return false;
             }
