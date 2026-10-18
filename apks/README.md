@@ -3,39 +3,29 @@
 - **Android 9 and newer:** [Download APK](NClientV3-4.2.7-reader-fix-android9plus.apk)
 - **Android 8 / 8.1:** [Download APK](NClientV3-4.2.7-reader-fix-android8.apk)
 
-On GitHub, open the APK and choose **Download raw file**. Transfer it to your
-Android device, open it, and allow installation from that source if prompted.
+On GitHub, open the APK and choose **Download raw file**. Open the downloaded
+file on your phone to install it. Build **420704 / 4.2.7-debug4** installs over
+NClientV3 Debug and uses the same signing key as the previous builds. It keeps
+that app’s settings. It installs alongside the production app; do not uninstall
+the production app to try it.
 
-These signed development builds install as **NClientV3 Debug** alongside the
-production app, with separate login and settings. The source and APKs are committed together in this directory’s update.
-Version code: `420703` (`4.2.7-debug3`). Do not uninstall the production app to try these builds.
+## Image host correction
 
-Both variants built successfully and passed 21 regression tests each. Live
-website/API access was blocked in the build environment, so reading on a device
-has not been confirmed. See [validation details](../docs/reader-fixes.md).
+For gallery 688486, the user confirmed that
+`https://i1.nhentai.net/galleries/4247333/1.webp` fails in the browser while
+`https://i.nhentai.net/galleries/4247333/1.webp` loads. The image path and file
+extension are identical.
+
+This build uses `i.nhentai.net` and `t.nhentai.net` for relative API media paths,
+repairs saved legacy i1/t1 URLs, and adds bounded connection failover among the
+known public image hosts. Absolute URLs supplied by the API remain authoritative.
+The previous reader UI, finite timeouts and request-prioritization changes remain.
+
+Both APK variants pass 33 regression tests each. APK signatures and checksums
+are verified. See [technical details](../docs/reader-fixes.md).
+
+The official API documentation request is blocked by the cloud proxy before it
+reaches nhentai. The working image URL is user-verified; the full current API
+contract and this APK’s reading behavior on the phone are not yet verified.
 
 Verify downloaded files with `sha256sum -c SHA256SUMS`.
-
-## Diagnostic update
-
-This update identifies HTTP errors, DNS failures, TLS failures and timeouts on
-failed pages. Tap the reader error text for details and **Open in browser** to
-compare the exact image URL. Long-press the dialog text to copy it. URLs shown
-in the dialog omit query parameters and fragments.
-
-The image-loading failure reported on Android 12 for gallery 688486 remains
-under investigation; this APK adds diagnostics and is not a confirmed fix for
-that failure. The gallery works in the user’s browser on the same connection.
-
-## Timeout and reader update
-
-Build 420703 uses a dedicated image client with a longer, finite timeout and
-limits nearby-page requests so the visible page starts first. Loading, timeout,
-retry and browser actions now use a clearer reader card, with a slow-response
-notice after eight seconds. TLS verification remains enabled.
-
-The timeout on the reported phone is not yet confirmed resolved. Live website
-requests are blocked by the build environment’s proxy, so this update must not
-be described as verified against the current live API. On a failed page, **Open
-in browser** tests the same image URL; **Connection details** shows its sanitized
-address and failure type.

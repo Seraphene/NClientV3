@@ -343,19 +343,19 @@ public class GalleryData implements Parcelable {
         String[] parts = path.split(";");
         if (parts[1].startsWith("http")) {
             changedInfo = true;
-            cover = new Page(ImageType.COVER, Uri.parse(parts[1]));
-            thumbnail = new Page(ImageType.THUMBNAIL, Uri.parse(parts[2]));
+            cover = new Page(ImageType.COVER, Uri.parse(com.maxwai.nclientv3.utility.ImageUrlResolver.restoreStored(parts[1], Utility.getHost(), true)));
+            thumbnail = new Page(ImageType.THUMBNAIL, Uri.parse(com.maxwai.nclientv3.utility.ImageUrlResolver.restoreStored(parts[2], Utility.getHost(), true)));
             int absolutePage = 0;
             for (int i = 3; i < parts.length; i++) {
-                pages.add(new Page(ImageType.PAGE, Uri.parse(parts[i]), null, absolutePage++));
+                pages.add(new Page(ImageType.PAGE, Uri.parse(com.maxwai.nclientv3.utility.ImageUrlResolver.restoreStored(parts[i], Utility.getHost(), false)), null, absolutePage++));
             }
             return;
         }
-        cover = new Page(ImageType.COVER, Uri.parse("https://t1." + Utility.getHost() + "/galleries/" + mediaId + parts[1]));
-        thumbnail = new Page(ImageType.THUMBNAIL, Uri.parse("https://t1." + Utility.getHost() + "/galleries/" + mediaId + parts[2]));
+        cover = new Page(ImageType.COVER, Uri.parse(com.maxwai.nclientv3.utility.ImageUrlResolver.resolve("galleries/" + mediaId + parts[1], Utility.getHost(), true)));
+        thumbnail = new Page(ImageType.THUMBNAIL, Uri.parse(com.maxwai.nclientv3.utility.ImageUrlResolver.resolve("galleries/" + mediaId + parts[2], Utility.getHost(), true)));
         int absolutePage = 0;
         for (int i = 3; i < parts.length; i++) {
-            pages.add(new Page(ImageType.PAGE, Uri.parse("https://i1." + Utility.getHost() + "/galleries/" + mediaId + parts[i]), null, absolutePage++));
+            pages.add(new Page(ImageType.PAGE, Uri.parse(com.maxwai.nclientv3.utility.ImageUrlResolver.resolve("galleries/" + mediaId + parts[i], Utility.getHost(), false)), null, absolutePage++));
         }
     }
 

@@ -26,6 +26,7 @@ public final class NetworkClients {
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(45, TimeUnit.SECONDS)
             .callTimeout(75, TimeUnit.SECONDS)
+            .addInterceptor(new ImageServerFallback())
             .addInterceptor(chain -> {
                 Request request = chain.request();
                 // No API authorization or login cookies are attached to media requests.
