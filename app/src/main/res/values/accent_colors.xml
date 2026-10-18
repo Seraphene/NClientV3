@@ -1,0 +1,12 @@
+<resources>
+<color name="accent_jade">#28684D</color>
+<color name="accent_jade_container">#DBEADF</color>
+<color name="accent_ocean">#2E658F</color>
+<color name="accent_ocean_container">#DCE8F3</color>
+<color name="accent_amethyst">#705299</color>
+<color name="accent_amethyst_container">#E8E0F2</color>
+<color name="accent_rose">#934F65</color>
+<color name="accent_rose_container">#F1DFE5</color>
+<color name="accent_copper">#905B38</color>
+<color name="accent_copper_container">#F0E2D6</color>
+</resources>

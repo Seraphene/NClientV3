@@ -144,6 +144,7 @@ public class MainActivity extends BaseActivity
 
         manageDrawer();
         setActivityTitle();
+        initializePremiumHome();
         if (firstTime) checkUpdate();
         if (inspector != null) {
             inspector.start();
@@ -162,6 +163,18 @@ public class MainActivity extends BaseActivity
                     setEnabled(true);
                 }
             }
+        });
+    }
+
+    public boolean isRootBrowse() { return modeType == ModeType.NORMAL; }
+
+    private void initializePremiumHome() {
+        com.maxwai.nclientv3.utility.PremiumUi.configure(this);
+        findViewById(R.id.home_search).setOnClickListener(v -> startActivity(new Intent(this, SearchActivity.class)));
+        findViewById(R.id.home_history).setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
+        findViewById(R.id.home_sort).setOnClickListener(v -> {
+            MenuItem sort = toolbar.getMenu().findItem(R.id.by_popular);
+            if (sort != null) onOptionsItemSelected(sort);
         });
     }
 
@@ -188,7 +201,7 @@ public class MainActivity extends BaseActivity
                 actionBar.setTitle(inspector.getTag().getName());
                 break;
             case NORMAL:
-                actionBar.setTitle(R.string.app_name);
+                actionBar.setTitle(R.string.ui_brand);
                 break;
             default:
                 actionBar.setTitle("WTF");
@@ -201,7 +214,7 @@ public class MainActivity extends BaseActivity
         ActionBar bar = getSupportActionBar();
         assert bar != null;
         bar.setDisplayShowTitleEnabled(true);
-        bar.setTitle(R.string.app_name);
+        bar.setTitle(R.string.ui_brand);
     }
 
     private void initializePageSwitcherActions() {
@@ -498,6 +511,7 @@ public class MainActivity extends BaseActivity
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        invalidateOptionsMenu();
     }
 
     @Override
@@ -511,6 +525,8 @@ public class MainActivity extends BaseActivity
         menu.findItem(R.id.random_favorite).setVisible(modeType == ModeType.FAVORITE);
 
         initializeSearchItem(menu.findItem(R.id.search));
+        menu.findItem(R.id.search).setVisible(modeType != ModeType.NORMAL
+            || findViewById(R.id.shelf_header).getVisibility() != View.VISIBLE);
 
 
         if (modeType == ModeType.TAG) {
@@ -547,6 +563,8 @@ public class MainActivity extends BaseActivity
     private void popularItemDispay(MenuItem item) {
         item.setTitle(getString(R.string.sort_type_title_format, getString(Global.getSortType().getNameId())));
         Global.setTint(this, item.getIcon());
+        android.widget.TextView sort = findViewById(R.id.home_sort);
+        if (sort != null) sort.setText(Global.getSortType().getNameId());
     }
 
     private void showLanguageIcon(MenuItem item) {
@@ -734,7 +752,7 @@ public class MainActivity extends BaseActivity
             intent = new Intent(this, StatusViewerActivity.class);
             startActivity(intent);
         }
-        //drawerLayout.closeDrawer(GravityCompat.START);
+        drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
 

@@ -7,6 +7,7 @@ import android.text.Layout;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.view.View;
 import android.widget.Filter;
 import android.widget.Filterable;
 
@@ -52,10 +53,19 @@ public class FavoriteAdapter extends RecyclerView.Adapter<GenericAdapter.ViewHol
         return cursor.getInt(cursor.getColumnIndex(Queries.GalleryTable.IDGALLERY));
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        androidx.recyclerview.widget.RecyclerView.LayoutManager manager = activity.getRecycler().getLayoutManager();
+        boolean single = activity.getResources().getConfiguration().screenHeightDp < 500
+            || (manager instanceof androidx.recyclerview.widget.GridLayoutManager
+            && ((androidx.recyclerview.widget.GridLayoutManager) manager).getSpanCount() == 1);
+        return single ? R.layout.entry_layout_single : R.layout.entry_layout;
+    }
+
     @NonNull
     @Override
     public GenericAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new GenericAdapter.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.entry_layout, parent, false));
+        return new GenericAdapter.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(viewType, parent, false));
     }
 
     @Nullable
@@ -82,14 +92,9 @@ public class FavoriteAdapter extends RecyclerView.Adapter<GenericAdapter.ViewHol
         ImageDownloadUtility.loadImage(activity, ent.getThumbnail(), holder.imgView);
         holder.pages.setText(String.format(Locale.US, "%d", ent.getPageCount()));
         holder.title.setText(ent.getTitle());
-        holder.flag.setText(Global.getLanguageFlag(ent.getLanguage()));
-        holder.title.setOnClickListener(v -> {
-            Layout layout = holder.title.getLayout();
-            if (layout.getEllipsisCount(layout.getLineCount() - 1) > 0)
-                holder.title.setMaxLines(7);
-            else if (holder.title.getMaxLines() == 7) holder.title.setMaxLines(3);
-            else holder.layout.performClick();
-        });
+        holder.flag.setText(activity.getString(ent.getLanguage().getNameResId()));
+        holder.flag.setVisibility(ent.getLanguage() == com.maxwai.nclientv3.api.enums.Language.UNKNOWN ? View.GONE : View.VISIBLE);
+        holder.title.setOnClickListener(v -> holder.layout.performClick());
         holder.layout.setOnClickListener(v -> {
             if (ent.getGalleryData().isValid())
                 startGallery(ent);
@@ -105,7 +110,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<GenericAdapter.ViewHol
             statusColor = Queries.StatusMangaTable.getStatus(ent.getId()).color;
             statuses.put(ent.getId(), statusColor);
         }
-        holder.title.setBackgroundColor(statusColor);
+        com.maxwai.nclientv3.utility.PremiumUi.status(holder.itemView, statusColor);
     }
 
     private void startGallery(Gallery ent) {

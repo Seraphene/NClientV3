@@ -1,0 +1,29 @@
+<resources>
+    <string name="nav_explore">发现</string>
+    <string name="nav_library">书库</string>
+    <string name="nav_downloads">已下载</string>
+    <string name="reading_space">你的阅读空间</string>
+    <string name="explore_subtitle">值得慢慢品味的故事。</string>
+    <string name="library_subtitle">喜欢的故事，随时相伴。</string>
+    <string name="downloads_subtitle">随时随地，畅读收藏。</string>
+    <string name="settings_subtitle">打造属于你的阅读体验。</string>
+    <string name="recent_reads">最近阅读</string>
+    <string name="search_hint_modern">搜索标题、标签、作者…</string>
+    <string name="empty_shelf_title">为下一个心动故事留白</string>
+    <string name="empty_shelf_subtitle">探索并收藏后，你的故事将在这里呈现。</string>
+    <string name="gallery_edition">收藏之中</string>
+    <string name="pages_heading">页面预览</string>
+    <string name="gallery_details">关于此图库</string>
+    <string name="show_details">展开详情</string>
+    <string name="hide_details">收起详情</string>
+    <string name="search_subtitle">找到值得沉浸其中的故事。</string>
+    <string name="continue_page">继续阅读 · 第 %1$d 页</string>
+<string name="ui_save">收藏</string><string name="ui_saved">已收藏</string>
+<string name="accent_color">强调色</string>
+<string name="accent_gold">金色</string>
+<string name="accent_jade">翡翠</string>
+<string name="accent_ocean">海洋</string>
+<string name="accent_amethyst">紫晶</string>
+<string name="accent_rose">玫瑰</string>
+<string name="accent_copper">铜色</string>
+</resources>

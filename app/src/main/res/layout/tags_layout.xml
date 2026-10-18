@@ -1,53 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/master"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            style="@style/TextAppearance.MaterialComponents.Headline5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:minWidth="80dp"
-            android:text="@string/id_tag" />
-
-        <TextView
-            android:id="@+id/id_num"
-            style="@style/TextAppearance.MaterialComponents.Headline5"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/master" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingStart="12dp" android:paddingEnd="12dp" android:paddingTop="16dp" android:paddingBottom="20dp" android:orientation="vertical">
+    <com.google.android.material.imageview.ShapeableImageView android:id="@+id/gallery_cover" android:layout_width="138dp" android:layout_height="184dp" android:layout_gravity="center_horizontal" android:background="@drawable/cover_placeholder" android:contentDescription="@string/image" android:scaleType="centerCrop" app:shapeAppearanceOverlay="@style/ShapeAppearance.NClient.Medium"/>
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:text="@string/reading_space" android:textAppearance="@style/TextAppearance.NClient.Eyebrow"/>
+    <TextView android:id="@+id/gallery_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:textAppearance="@style/TextAppearance.NClient.Title" android:fontFamily="serif" android:textSize="28sp" android:lineSpacingExtra="5dp"/>
+    <include layout="@layout/info_layout"/>
+    <com.google.android.material.button.MaterialButton android:id="@+id/gallery_read" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="24dp" android:text="@string/read_gallery" app:icon="@drawable/ic_play" app:iconGravity="textStart"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="12dp">
+        <com.google.android.material.button.MaterialButton android:id="@+id/gallery_save" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:layout_marginEnd="6dp" android:text="@string/ui_save" android:textAllCaps="false" app:icon="@drawable/ic_bookmark_border" app:cornerRadius="16dp" app:strokeColor="@color/outline_soft"/>
+        <com.google.android.material.button.MaterialButton android:id="@+id/gallery_download" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:layout_marginStart="6dp" android:text="@string/nav_downloads" android:textAllCaps="false" app:icon="@drawable/ic_file" app:cornerRadius="16dp" app:strokeColor="@color/outline_soft"/>
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/tag_master"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <include layout="@layout/sub_tag_layout" />
-
-        <include layout="@layout/sub_tag_layout" />
-
-        <include layout="@layout/sub_tag_layout" />
-
-        <include layout="@layout/sub_tag_layout" />
-
-        <include layout="@layout/sub_tag_layout" />
-
-        <include layout="@layout/sub_tag_layout" />
-
-        <include layout="@layout/sub_tag_layout" />
-
-        <include layout="@layout/sub_tag_layout" />
-
-        <include layout="@layout/info_layout" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:orientation="horizontal" android:gravity="center_vertical">
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/gallery_details" android:textAppearance="@style/TextAppearance.NClient.CardTitle"/>
+        <TextView android:id="@+id/id_num" android:layout_width="wrap_content" android:layout_height="48dp" android:paddingStart="12dp" android:paddingEnd="12dp" android:gravity="center" android:background="@drawable/badge_surface" android:textColor="?attr/colorPrimary" android:textSize="12sp"/>
     </LinearLayout>
+    <com.google.android.material.button.MaterialButton android:id="@+id/details_toggle" style="@style/Widget.MaterialComponents.Button.TextButton" android:layout_width="match_parent" android:layout_height="48dp" android:gravity="start|center_vertical" android:text="@string/show_details" android:textAllCaps="false" app:icon="@drawable/ic_add"/>
+    <LinearLayout android:id="@+id/tag_master" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+        <include layout="@layout/sub_tag_layout"/><include layout="@layout/sub_tag_layout"/>
+        <include layout="@layout/sub_tag_layout"/><include layout="@layout/sub_tag_layout"/>
+        <include layout="@layout/sub_tag_layout"/><include layout="@layout/sub_tag_layout"/>
+        <include layout="@layout/sub_tag_layout"/><include layout="@layout/sub_tag_layout"/>
+    </LinearLayout>
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:text="@string/pages_heading" android:textAppearance="@style/TextAppearance.NClient.Title" android:fontFamily="serif"/>
 </LinearLayout>

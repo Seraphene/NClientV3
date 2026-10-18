@@ -1,0 +1,29 @@
+<resources>
+    <string name="nav_explore">見つける</string>
+    <string name="nav_library">ライブラリ</string>
+    <string name="nav_downloads">保存済み</string>
+    <string name="reading_space">あなたの読書空間</string>
+    <string name="explore_subtitle">ゆっくり味わいたい物語を。</string>
+    <string name="library_subtitle">お気に入りの物語を、いつもそばに。</string>
+    <string name="downloads_subtitle">コレクションを、どこにいても。</string>
+    <string name="settings_subtitle">あなたらしい読書体験に。</string>
+    <string name="recent_reads">最近読んだ本</string>
+    <string name="search_hint_modern">タイトル・タグ・作者を検索…</string>
+    <string name="empty_shelf_title">次のお気に入りのために</string>
+    <string name="empty_shelf_subtitle">見つけて保存した物語がここに表示されます。</string>
+    <string name="gallery_edition">コレクション内</string>
+    <string name="pages_heading">ページ</string>
+    <string name="gallery_details">ギャラリーについて</string>
+    <string name="show_details">詳細を表示</string>
+    <string name="hide_details">詳細を隠す</string>
+    <string name="search_subtitle">夢中になれる物語を見つけよう。</string>
+    <string name="continue_page">続きを読む · %1$d ページ</string>
+<string name="ui_save">保存</string><string name="ui_saved">保存済み</string>
+<string name="accent_color">アクセントカラー</string>
+<string name="accent_gold">ゴールド</string>
+<string name="accent_jade">ジェイド</string>
+<string name="accent_ocean">オーシャン</string>
+<string name="accent_amethyst">アメジスト</string>
+<string name="accent_rose">ローズ</string>
+<string name="accent_copper">コッパー</string>
+</resources>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="preference_key_accent" translatable="false">accent_color</string>
+    <string-array name="accent_values" translatable="false"><item>gold</item><item>jade</item><item>ocean</item><item>amethyst</item><item>rose</item><item>copper</item></string-array>
+    <string-array name="accent_labels"><item>@string/accent_gold</item><item>@string/accent_jade</item><item>@string/accent_ocean</item><item>@string/accent_amethyst</item><item>@string/accent_rose</item><item>@string/accent_copper</item></string-array>
+</resources>

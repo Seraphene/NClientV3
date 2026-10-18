@@ -146,7 +146,7 @@ public class LocalActivity extends BaseActivity {
 
     @Override
     protected void changeLayout(boolean landscape) {
-        colCount = (landscape ? getLandscapeColumnCount() : getPortraitColumnCount());
+        colCount = resolveColumnCount(landscape);
         if (adapter != null) adapter.setColCount(colCount);
         super.changeLayout(landscape);
     }

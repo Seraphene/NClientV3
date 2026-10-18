@@ -1,0 +1,29 @@
+<resources>
+    <string name="nav_explore">Обзор</string>
+    <string name="nav_library">Библиотека</string>
+    <string name="nav_downloads">Загрузки</string>
+    <string name="reading_space">Твоё место для чтения</string>
+    <string name="explore_subtitle">Истории, с которыми не хочется спешить.</string>
+    <string name="library_subtitle">Любимые истории всегда рядом.</string>
+    <string name="downloads_subtitle">Твоя коллекция доступна где угодно.</string>
+    <string name="settings_subtitle">Чтение в твоём стиле.</string>
+    <string name="recent_reads">Недавнее</string>
+    <string name="search_hint_modern">Названия, теги, авторы…</string>
+    <string name="empty_shelf_title">Место для нового любимого</string>
+    <string name="empty_shelf_subtitle">Открывай и сохраняй истории — они появятся здесь.</string>
+    <string name="gallery_edition">В твоей коллекции</string>
+    <string name="pages_heading">Страницы</string>
+    <string name="gallery_details">Об этой галерее</string>
+    <string name="show_details">Показать сведения</string>
+    <string name="hide_details">Скрыть сведения</string>
+    <string name="search_subtitle">Найди историю, в которую стоит погрузиться.</string>
+    <string name="continue_page">Продолжить · стр. %1$d</string>
+<string name="ui_save">Сохранить</string><string name="ui_saved">Сохранено</string>
+<string name="accent_color">Цвет акцента</string>
+<string name="accent_gold">Золото</string>
+<string name="accent_jade">Нефрит</string>
+<string name="accent_ocean">Океан</string>
+<string name="accent_amethyst">Аметист</string>
+<string name="accent_rose">Роза</string>
+<string name="accent_copper">Медь</string>
+</resources>

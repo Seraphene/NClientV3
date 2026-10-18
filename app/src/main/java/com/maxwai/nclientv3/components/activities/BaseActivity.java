@@ -41,10 +41,18 @@ public abstract class BaseActivity extends GeneralActivity {
         }
     }
 
+    protected int resolveColumnCount(boolean landscape) {
+        Configuration configuration = getResources().getConfiguration();
+        return com.maxwai.nclientv3.utility.PremiumUi.columns(
+            landscape ? getLandscapeColumnCount() : getPortraitColumnCount(),
+            configuration.screenWidthDp, configuration.screenHeightDp,
+            this instanceof com.maxwai.nclientv3.GalleryActivity);
+    }
+
     protected void changeLayout(boolean landscape) {
         CustomGridLayoutManager manager = (CustomGridLayoutManager) recycler.getLayoutManager();
         RecyclerView.Adapter<?> adapter = recycler.getAdapter();
-        int count = landscape ? getLandscapeColumnCount() : getPortraitColumnCount();
+        int count = resolveColumnCount(landscape);
         int position = 0;
 
         if (manager != null)
@@ -52,6 +60,6 @@ public abstract class BaseActivity extends GeneralActivity {
         CustomGridLayoutManager gridLayoutManager = new CustomGridLayoutManager(this, count);
         recycler.setLayoutManager(gridLayoutManager);
         recycler.setAdapter(adapter);
-        recycler.scrollToPosition(position);
+        recycler.scrollToPosition(Math.max(0, position));
     }
 }

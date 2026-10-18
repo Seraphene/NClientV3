@@ -267,19 +267,17 @@ public class LocalAdapter extends MultichoiceAdapter<Object, LocalAdapter.ViewHo
     protected ViewHolder onCreateMultichoiceViewHolder(@NonNull ViewGroup parent, int viewType) {
         int id = 0;
         switch (viewType) {
-            case 0:
-                id = colCount == 1 ? R.layout.entry_layout_single : R.layout.entry_layout;
-                break;
-            case 1:
-                id = colCount == 1 ? R.layout.entry_download_layout : R.layout.entry_download_layout_compact;
-                break;
+            case 0: id = R.layout.entry_layout_single; break;
+            case 1: id = R.layout.entry_layout; break;
+            case 2: id = R.layout.entry_download_layout; break;
+            case 3: id = R.layout.entry_download_layout_compact; break;
         }
         return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(id, parent, false));
     }
 
     @Override
     public int getItemViewType(int position) {
-        return filter.get(position) instanceof LocalGallery ? 0 : 1;
+        return (filter.get(position) instanceof LocalGallery ? 0 : 2) + (colCount == 1 || context.getResources().getConfiguration().screenHeightDp < 500 ? 0 : 1);
     }
 
     private void bindGallery(@NonNull final ViewHolder holder, LocalGallery ent) {
@@ -290,13 +288,7 @@ public class LocalAdapter extends MultichoiceAdapter<Object, LocalAdapter.ViewHo
             holder.pages.setText(context.getString(R.string.page_count_format, ent.getPageCount()));
         else holder.pages.setText(String.format(Locale.US, "%d", ent.getPageCount()));
 
-        holder.title.setOnClickListener(v -> {
-            Layout layout = holder.title.getLayout();
-            if (layout.getEllipsisCount(layout.getLineCount() - 1) > 0)
-                holder.title.setMaxLines(7);
-            else if (holder.title.getMaxLines() == 7) holder.title.setMaxLines(3);
-            else holder.layout.performClick();
-        });
+        holder.title.setOnClickListener(v -> holder.layout.performClick());
 
         /*holder.layout.setOnLongClickListener(v -> {
             createContextualMenu(position);
@@ -307,7 +299,7 @@ public class LocalAdapter extends MultichoiceAdapter<Object, LocalAdapter.ViewHo
             statusColor = Queries.StatusMangaTable.getStatus(ent.getId()).color;
             statuses.put(ent.getId(), statusColor);
         }
-        holder.title.setBackgroundColor(statusColor);
+        com.maxwai.nclientv3.utility.PremiumUi.status(holder.itemView, statusColor);
     }
 
     public void updateColor(int id) {
@@ -369,10 +361,6 @@ public class LocalAdapter extends MultichoiceAdapter<Object, LocalAdapter.ViewHo
         holder.progressBar.setIndeterminate(downloader.getStatus() == GalleryDownloaderV2.Status.NOT_STARTED);
         Global.setTint(context, holder.playButton.getDrawable());
         Global.setTint(context, holder.cancelButton.getDrawable());
-        if (holder.layout != null) { // Compact download cards have a dark image overlay.
-            holder.playButton.setColorFilter(android.graphics.Color.WHITE);
-            holder.cancelButton.setColorFilter(android.graphics.Color.WHITE);
-        }
         holder.playButton.setContentDescription(context.getString(downloader.getStatus() == GalleryDownloaderV2.Status.DOWNLOADING
             ? R.string.stop_download : R.string.start_download));
     }

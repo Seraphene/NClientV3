@@ -1,0 +1,30 @@
+<resources>
+    <string name="nav_explore">Explore</string>
+    <string name="nav_library">Library</string>
+    <string name="nav_downloads">Downloads</string>
+    <string name="reading_space">Your reading space</string>
+    <string name="explore_subtitle">Stories worth slowing down for.</string>
+    <string name="library_subtitle">Keep the stories you love close.</string>
+    <string name="downloads_subtitle">Your collection, ready wherever you are.</string>
+    <string name="settings_subtitle">A reading experience that feels like you.</string>
+    <string name="recent_reads">Recent reads</string>
+    <string name="search_hint_modern">Search titles, tags, artists…</string>
+    <string name="empty_shelf_title">Room for your next favorite</string>
+    <string name="empty_shelf_subtitle">Your stories will appear here as you explore and save.</string>
+    <string name="gallery_edition">In your collection</string>
+    <string name="pages_heading">The pages</string>
+    <string name="gallery_details">About this gallery</string>
+    <string name="show_details">Show details</string>
+    <string name="hide_details">Hide details</string>
+    <string name="search_subtitle">Find something worth getting lost in.</string>
+    <string name="continue_page">Continue · page %1$d</string>
+<string name="ui_save">Save</string><string name="ui_saved">Saved</string>
+<string name="ui_brand" translatable="false">NClient</string>
+<string name="accent_color">Accent color</string>
+<string name="accent_gold">Gold</string>
+<string name="accent_jade">Jade</string>
+<string name="accent_ocean">Ocean</string>
+<string name="accent_amethyst">Amethyst</string>
+<string name="accent_rose">Rose</string>
+<string name="accent_copper">Copper</string>
+</resources>

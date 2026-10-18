@@ -1,0 +1,29 @@
+<resources>
+    <string name="nav_explore">Esplora</string>
+    <string name="nav_library">Libreria</string>
+    <string name="nav_downloads">Download</string>
+    <string name="reading_space">Il tuo spazio di lettura</string>
+    <string name="explore_subtitle">Storie da assaporare con calma.</string>
+    <string name="library_subtitle">Le tue storie preferite, sempre vicine.</string>
+    <string name="downloads_subtitle">La tua collezione, ovunque ti trovi.</string>
+    <string name="settings_subtitle">Una lettura che rispecchia il tuo stile.</string>
+    <string name="recent_reads">Letture recenti</string>
+    <string name="search_hint_modern">Cerca titoli, tag, artisti…</string>
+    <string name="empty_shelf_title">Spazio per il prossimo preferito</string>
+    <string name="empty_shelf_subtitle">Le tue storie appariranno qui mentre esplori e salvi.</string>
+    <string name="gallery_edition">Nella tua collezione</string>
+    <string name="pages_heading">Le pagine</string>
+    <string name="gallery_details">Informazioni sulla galleria</string>
+    <string name="show_details">Mostra dettagli</string>
+    <string name="hide_details">Nascondi dettagli</string>
+    <string name="search_subtitle">Trova una storia in cui immergerti.</string>
+    <string name="continue_page">Continua · pagina %1$d</string>
+<string name="ui_save">Salva</string><string name="ui_saved">Salvato</string>
+<string name="accent_color">Colore principale</string>
+<string name="accent_gold">Oro</string>
+<string name="accent_jade">Giada</string>
+<string name="accent_ocean">Oceano</string>
+<string name="accent_amethyst">Ametista</string>
+<string name="accent_rose">Rosa</string>
+<string name="accent_copper">Rame</string>
+</resources>

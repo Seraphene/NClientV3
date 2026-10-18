@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory
+    <PreferenceCategory android:layout="@layout/preference_category_premium"
         android:title="@string/main_column_count"
         app:iconSpaceReserved="false">
         <SeekBarPreference
@@ -21,14 +21,14 @@
             app:iconSpaceReserved="false"
             app:min="1"
             app:showSeekBarValue="true" />
-        <SwitchPreferenceCompat
+        <SwitchPreferenceCompat android:layout="@layout/preference_premium"
             android:defaultValue="false"
             android:key="@string/key_infinite_scroll_main"
             android:title="@string/infinite_scroll"
             app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
-    <PreferenceCategory
+    <PreferenceCategory android:layout="@layout/preference_category_premium"
         android:title="@string/download_column_count"
         app:iconSpaceReserved="false">
         <SeekBarPreference
@@ -49,7 +49,7 @@
             app:showSeekBarValue="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory
+    <PreferenceCategory android:layout="@layout/preference_category_premium"
         android:title="@string/favorite_column_count"
         app:iconSpaceReserved="false">
         <SeekBarPreference
@@ -68,14 +68,14 @@
             app:iconSpaceReserved="false"
             app:min="1"
             app:showSeekBarValue="true" />
-        <SwitchPreferenceCompat
+        <SwitchPreferenceCompat android:layout="@layout/preference_premium"
             android:defaultValue="false"
             android:key="@string/key_infinite_scroll_favo"
             android:title="@string/infinite_scroll"
             app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
-    <PreferenceCategory
+    <PreferenceCategory android:layout="@layout/preference_category_premium"
         android:title="@string/history_column_count"
         app:iconSpaceReserved="false">
         <SeekBarPreference
@@ -96,7 +96,7 @@
             app:showSeekBarValue="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory
+    <PreferenceCategory android:layout="@layout/preference_category_premium"
         android:title="@string/status_column_count"
         app:iconSpaceReserved="false">
         <SeekBarPreference

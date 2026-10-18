@@ -16,7 +16,7 @@ val keystoreProperties = Properties().apply {
 val majorVersion = 4
 val minorVersion = 2
 val patchVersion = 7
-val buildVersion = 5
+val buildVersion = 6
 val version = "${majorVersion}.${minorVersion}.${patchVersion}"
 
 android {
@@ -64,7 +64,7 @@ android {
         }
         getByName("debug") {
             applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug5"
+            versionNameSuffix = "-debug6"
             resValue("string", "app_name", "NClientV3 Debug")
         }
         create("RelWithDebInfo") {
@@ -93,6 +93,16 @@ android {
         }
     }
     namespace = "com.maxwai.nclientv3"
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        unitTests.all {
+            it.systemProperty("robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2")
+            // Robolectric writes a download lock in its JVM home; keep it in the writable test cache.
+            it.systemProperty("user.home", gradle.gradleUserHomeDir.resolve("caches").absolutePath)
+            it.systemProperty("maven.repo.local", gradle.gradleUserHomeDir.resolve("caches/robolectric").absolutePath)
+        }
+    }
+
     buildFeatures {
         buildConfig = true
         resValues = true
@@ -149,6 +159,7 @@ androidComponents {
 dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20250517")
+    testImplementation("org.robolectric:robolectric:4.16.1")
 // Android
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("androidx.cardview:cardview:1.0.0")

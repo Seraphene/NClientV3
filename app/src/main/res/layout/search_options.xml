@@ -3,12 +3,12 @@
     android:id="@+id/groups"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
-    android:layout_marginLeft="8dp"
-    android:layout_marginEnd="8dp"
-    android:layout_marginRight="8dp"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:layout_marginStart="24dp"
+
+    android:layout_marginEnd="24dp"
+
+    android:paddingTop="16dp"
+    android:paddingBottom="20dp"
     android:visibility="gone">
 
     <LinearLayout
@@ -39,11 +39,11 @@
             android:id="@+id/tag_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:animateLayoutChanges="true" />
+            android:layout_marginStart="24dp"
+
+            android:layout_marginEnd="24dp"
+
+             />
 
         <TextView
             style="@style/TextAppearance.MaterialComponents.Headline6"
@@ -55,11 +55,11 @@
             android:id="@+id/parody_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:animateLayoutChanges="true" />
+            android:layout_marginStart="24dp"
+
+            android:layout_marginEnd="24dp"
+
+             />
 
         <TextView
             style="@style/TextAppearance.MaterialComponents.Headline6"
@@ -71,11 +71,11 @@
             android:id="@+id/character_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:animateLayoutChanges="true" />
+            android:layout_marginStart="24dp"
+
+            android:layout_marginEnd="24dp"
+
+             />
 
         <TextView
             style="@style/TextAppearance.MaterialComponents.Headline6"
@@ -87,11 +87,11 @@
             android:id="@+id/artist_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:animateLayoutChanges="true" />
+            android:layout_marginStart="24dp"
+
+            android:layout_marginEnd="24dp"
+
+             />
 
         <TextView
             style="@style/TextAppearance.MaterialComponents.Headline6"
@@ -103,11 +103,11 @@
             android:id="@+id/group_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:animateLayoutChanges="true" />
+            android:layout_marginStart="24dp"
+
+            android:layout_marginEnd="24dp"
+
+             />
 
         <TextView
             style="@style/TextAppearance.MaterialComponents.Headline6"
@@ -119,11 +119,11 @@
             android:id="@+id/category_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:animateLayoutChanges="true" />
+            android:layout_marginStart="24dp"
+
+            android:layout_marginEnd="24dp"
+
+             />
 
         <TextView
             style="@style/TextAppearance.MaterialComponents.Headline6"
@@ -135,11 +135,11 @@
             android:id="@+id/language_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:animateLayoutChanges="true" />
+            android:layout_marginStart="24dp"
+
+            android:layout_marginEnd="24dp"
+
+             />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

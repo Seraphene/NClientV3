@@ -4,44 +4,44 @@
 
     <item android:id="@+id/read_gallery" android:icon="@drawable/ic_play"
         android:orderInCategory="0" android:title="@string/read_gallery"
-        app:showAsAction="ifRoom|withText" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/favorite_manager"
         android:icon="@drawable/ic_favorite_border"
         android:orderInCategory="100"
         android:title="@string/toggle_favorite"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/change_view"
         android:icon="@drawable/ic_view_1"
         android:orderInCategory="200"
         android:title="@string/change_view"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/load_internet"
         android:icon="@drawable/ic_world"
         android:orderInCategory="500"
         android:title="@string/go_online"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/related"
         android:icon="@drawable/ic_burst_mode"
         android:orderInCategory="300"
         android:title="@string/show_related"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/download_gallery"
         android:icon="@drawable/ic_file"
         android:orderInCategory="400"
         android:title="@string/download_gallery"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/add_online_gallery"
         android:icon="@drawable/ic_star"
         android:orderInCategory="500"
         android:title="@string/remove_from_online_favorites"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/manage_status"
         android:orderInCategory="550"
@@ -52,11 +52,11 @@
         android:icon="@drawable/ic_share"
         android:orderInCategory="600"
         android:title="@string/share"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/comments"
         android:icon="@drawable/ic_chat_bubble"
         android:orderInCategory="700"
         android:title="@string/comments"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
 </menu>

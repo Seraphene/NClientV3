@@ -1,12 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="entry_background">#7f000000</color>
-    <color name="color_overlay">#8f000000</color>
-
-    <color name="tint_dark">@android:color/black</color>
-    <color name="tint_light">@android:color/white</color>
-
-    <color name="primaryColorVariant">#F3F5FB</color>
-    <color name="colorAccent">#4263EB</color>
-    <color name="colorPrimary">#4263EB</color>
+    <color name="canvas">#F6F3ED</color><color name="surface">#FFFCF7</color>
+    <color name="surface_raised">#EDE7DD</color><color name="text_primary">#27241F</color>
+    <color name="text_secondary">#746D63</color><color name="outline_soft">#DDD5C8</color>
+    <color name="gold_container">#ECE0C6</color><color name="on_gold">#FFFCF7</color>
+    <color name="colorPrimary">#826128</color><color name="colorAccent">#826128</color>
+    <color name="primaryColorVariant">@color/canvas</color>
+    <color name="entry_background">#E620211F</color><color name="color_overlay">#BA161715</color>
+    <color name="tint_dark">@color/text_primary</color><color name="tint_light">#F3EDE3</color>
 </resources>

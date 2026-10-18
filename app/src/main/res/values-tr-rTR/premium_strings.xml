@@ -1,0 +1,29 @@
+<resources>
+    <string name="nav_explore">Keşfet</string>
+    <string name="nav_library">Kitaplık</string>
+    <string name="nav_downloads">İndirilenler</string>
+    <string name="reading_space">Okuma alanın</string>
+    <string name="explore_subtitle">Acele etmeden okunacak hikâyeler.</string>
+    <string name="library_subtitle">Sevdiğin hikâyeler hep yanında.</string>
+    <string name="downloads_subtitle">Koleksiyonun her yerde hazır.</string>
+    <string name="settings_subtitle">Sana özel bir okuma deneyimi.</string>
+    <string name="recent_reads">Son okunanlar</string>
+    <string name="search_hint_modern">Başlık, etiket, sanatçı ara…</string>
+    <string name="empty_shelf_title">Yeni favorin için yer var</string>
+    <string name="empty_shelf_subtitle">Keşfedip kaydettikçe hikâyelerin burada görünecek.</string>
+    <string name="gallery_edition">Koleksiyonunda</string>
+    <string name="pages_heading">Sayfalar</string>
+    <string name="gallery_details">Bu galeri hakkında</string>
+    <string name="show_details">Ayrıntıları göster</string>
+    <string name="hide_details">Ayrıntıları gizle</string>
+    <string name="search_subtitle">İçine dalmaya değer bir hikâye bul.</string>
+    <string name="continue_page">Devam et · sayfa %1$d</string>
+<string name="ui_save">Kaydet</string><string name="ui_saved">Kaydedildi</string>
+<string name="accent_color">Vurgu rengi</string>
+<string name="accent_gold">Altın</string>
+<string name="accent_jade">Yeşim</string>
+<string name="accent_ocean">Okyanus</string>
+<string name="accent_amethyst">Ametist</string>
+<string name="accent_rose">Gül</string>
+<string name="accent_copper">Bakır</string>
+</resources>

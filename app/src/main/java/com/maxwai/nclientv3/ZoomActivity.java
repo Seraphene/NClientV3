@@ -240,7 +240,8 @@ public class ZoomActivity extends GeneralActivity {
 
     private void applyMargin(boolean landscape, View view) {
         ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) view.getLayoutParams();
-        lp.setMargins(0, 0, landscape && !hardwareKeys() ? Global.getNavigationBarHeight(this) : 0, 0);
+        int inset = (int) (16 * getResources().getDisplayMetrics().density);
+        lp.setMargins(inset, inset, inset, inset);
         view.setLayoutParams(lp);
     }
 
@@ -248,7 +249,8 @@ public class ZoomActivity extends GeneralActivity {
         int statusBarHeight = Global.getStatusBarHeight(this);
         applyMargin(landscape, findViewById(R.id.master_layout));
         applyMargin(landscape, toolbar);
-        pageSwitcher.setPadding(0, 0, 0, landscape ? 0 : statusBarHeight);
+        // The application already consumes system-bar insets.
+        pageSwitcher.setPadding(pageSwitcher.getPaddingLeft(), pageSwitcher.getPaddingTop(), pageSwitcher.getPaddingRight(), (int) (12 * getResources().getDisplayMetrics().density));
     }
 
     private void changePage(int newPage) {
@@ -399,9 +401,9 @@ public class ZoomActivity extends GeneralActivity {
         view.setVisibility(View.VISIBLE);
         cornerPageViewer.setVisibility(View.GONE);
 
-        pageSwitcher.animate().alpha(isHidden ? 0f : 0.96f).setDuration(150).setListener(adapter).start();
-        view.animate().alpha(isHidden ? 0f : 0.96f).setDuration(150).setListener(adapter).start();
-        toolbar.animate().alpha(isHidden ? 0f : 0.96f).setDuration(150).setListener(adapter).start();
+        pageSwitcher.animate().alpha(isHidden ? 0f : 1f).setDuration(200).setListener(adapter).start();
+        view.animate().alpha(isHidden ? 0f : 1f).setDuration(200).setListener(adapter).start();
+        toolbar.animate().alpha(isHidden ? 0f : 1f).setDuration(200).setListener(adapter).start();
     }
 
     private void applyVisibilityFlag() {

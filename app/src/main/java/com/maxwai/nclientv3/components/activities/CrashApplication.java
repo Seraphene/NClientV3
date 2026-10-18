@@ -58,10 +58,17 @@ public class CrashApplication extends Application {
         TagV2.initSortByName(this);
         DownloadGalleryV2.loadDownloads(this);
         registerActivityLifecycleCallbacks(new CustomActivityLifecycleCallback());
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            String theme = preferences.getString(getString(R.string.preference_key_theme_select), "");
-            setDarkLightTheme(theme, this);
+        String themeKey = getString(R.string.preference_key_theme_select);
+        if (!preferences.getBoolean("premium_ui_theme_applied", false)) {
+            preferences.edit().putString(themeKey, "dark")
+                .putBoolean(getString(R.string.preference_key_black_theme), false)
+                .putBoolean("premium_ui_theme_applied", true).apply();
         }
+        String theme = preferences.getString(themeKey, "dark");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            android.app.UiModeManager manager = (android.app.UiModeManager) getSystemService(UI_MODE_SERVICE);
+            manager.setApplicationNightMode("light".equals(theme) ? android.app.UiModeManager.MODE_NIGHT_NO : android.app.UiModeManager.MODE_NIGHT_YES);
+        } else setDarkLightTheme(theme, this);
     }
 
     private void afterUpdateChecks(SharedPreferences preferences, String oldVersion) {

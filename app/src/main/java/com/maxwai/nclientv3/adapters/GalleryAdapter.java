@@ -59,6 +59,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     private GalleryFolder directory = null;
     private Policy policy;
     private int colCount;
+    private boolean detailsExpanded = false;
 
     public GalleryAdapter(GalleryActivity cont, GenericGallery gallery, int colCount) {
         this.context = cont;
@@ -164,9 +165,50 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     }
 
     private void loadTagLayout(ViewHolder holder) {
+        android.widget.TextView title = holder.master.findViewById(R.id.gallery_title);
+        title.setText(gallery.getTitle());
+        title.setOnLongClickListener(v -> {
+            CopyToClipboardActivity.copyTextToClipboard(context, gallery.getTitle());
+            Toast.makeText(context, R.string.title_copied_to_clipboard, Toast.LENGTH_SHORT).show();
+            return true;
+        });
+        android.widget.ImageView cover = holder.master.findViewById(R.id.gallery_cover);
+        if (gallery.isLocal()) {
+            LocalGallery local = (LocalGallery) gallery;
+            ImageDownloadUtility.loadImage(context, local.getPage(local.getMin()), cover);
+        } else ImageDownloadUtility.loadImage(context, ((Gallery) gallery).getCover(), cover);
+        holder.master.findViewById(R.id.gallery_read).setOnClickListener(v -> context.performGalleryAction(R.id.read_gallery));
+        holder.master.findViewById(R.id.gallery_read).setEnabled(gallery.getPageCount() > 0);
+        int resume = Queries.ResumeTable.pageFromId(gallery.getId());
+        ((com.google.android.material.button.MaterialButton) holder.master.findViewById(R.id.gallery_read))
+            .setText(resume > 0 ? context.getString(R.string.continue_page, resume) : context.getString(R.string.read_gallery));
+        com.google.android.material.button.MaterialButton save = holder.master.findViewById(R.id.gallery_save);
+        boolean saved = com.maxwai.nclientv3.settings.Favorites.isFavorite(gallery);
+        save.setText(saved ? R.string.ui_saved : R.string.ui_save);
+        save.setIconResource(saved ? R.drawable.ic_bookmark : R.drawable.ic_bookmark_border);
+        save.setVisibility(gallery.isLocal() ? View.GONE : View.VISIBLE);
+        save.setOnClickListener(v -> context.performGalleryAction(R.id.favorite_manager));
+        View download = holder.master.findViewById(R.id.gallery_download);
+        download.setVisibility(gallery.isLocal() ? View.GONE : View.VISIBLE);
+        download.setOnClickListener(v -> context.performGalleryAction(R.id.download_gallery));
         final ViewGroup vg = holder.master.findViewById(R.id.tag_master);
         final TextView idContainer = holder.master.findViewById(R.id.id_num);
         initializeIdContainer(idContainer);
+        if (gallery.hasGalleryData()) addInfoLayout(holder, gallery.getGalleryData());
+        else {
+            ((TextView) holder.master.findViewById(R.id.page_count)).setText(context.getString(R.string.page_count_format, gallery.getPageCount()));
+            holder.master.findViewById(R.id.favorite_count).setVisibility(View.GONE);
+            holder.master.findViewById(R.id.upload_date).setVisibility(View.GONE);
+        }
+        com.google.android.material.button.MaterialButton toggle = holder.master.findViewById(R.id.details_toggle);
+        toggle.setVisibility(hasTags() ? View.VISIBLE : View.GONE);
+        vg.setVisibility(detailsExpanded ? View.VISIBLE : View.GONE);
+        toggle.setText(detailsExpanded ? R.string.hide_details : R.string.show_details);
+        toggle.setOnClickListener(v -> {
+            detailsExpanded = !detailsExpanded;
+            vg.setVisibility(detailsExpanded ? View.VISIBLE : View.GONE);
+            toggle.setText(detailsExpanded ? R.string.hide_details : R.string.show_details);
+        });
         if (!hasTags()) {
             ViewGroup.LayoutParams layoutParams = vg.getLayoutParams();
             layoutParams.height = 0;
@@ -204,7 +246,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
                 });
                 cg.addView(c);
             }
-            addInfoLayout(holder, gallery.getGalleryData());
+
         }
     }
 

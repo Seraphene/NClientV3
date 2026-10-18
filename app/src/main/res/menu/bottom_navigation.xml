@@ -1,0 +1,6 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_explore" android:icon="@drawable/ic_explore" android:title="@string/nav_explore"/>
+    <item android:id="@+id/nav_library" android:icon="@drawable/ic_bookmark_border" android:title="@string/nav_library"/>
+    <item android:id="@+id/nav_downloads" android:icon="@drawable/ic_file" android:title="@string/nav_downloads"/>
+    <item android:id="@+id/nav_settings" android:icon="@drawable/ic_settings" android:title="@string/settings"/>
+</menu>

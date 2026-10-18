@@ -20,6 +20,7 @@ import java.lang.ref.WeakReference;
 
 public abstract class GeneralActivity extends AppCompatActivity {
     private static WeakReference<GeneralActivity> lastActivity;
+    private String appliedAccent;
     private boolean isFastScrollerApplied = false;
     private CFTokenView tokenView = null;
 
@@ -47,6 +48,30 @@ public abstract class GeneralActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onContentChanged() {
+        super.onContentChanged();
+        com.maxwai.nclientv3.utility.PremiumUi.configure(this);
+    }
+
+    @Override
+    public void onConfigurationChanged(@androidx.annotation.NonNull android.content.res.Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        com.maxwai.nclientv3.utility.PremiumUi.configure(this);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int code, @androidx.annotation.NonNull String[] permissions,
+                                          @androidx.annotation.NonNull int[] results) {
+        super.onRequestPermissionsResult(code, permissions, results);
+        if (code == com.maxwai.nclientv3.utility.PremiumUi.DOWNLOAD_PERMISSION && results.length > 0
+            && results[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            Global.initStorage(this);
+            startActivity(new android.content.Intent(this, com.maxwai.nclientv3.LocalActivity.class));
+            if (!(this instanceof com.maxwai.nclientv3.MainActivity)) finish();
+        }
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
     }
@@ -57,12 +82,18 @@ public abstract class GeneralActivity extends AppCompatActivity {
         if (Global.hideMultitask())
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         Global.initActivity(this);
+        appliedAccent = com.maxwai.nclientv3.utility.AccentTheme.selected(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if (appliedAccent != null && !appliedAccent.equals(com.maxwai.nclientv3.utility.AccentTheme.selected(this))) {
+            recreate();
+            return;
+        }
         lastActivity = new WeakReference<>(this);
+        com.maxwai.nclientv3.utility.PremiumUi.configure(this);
         if (!isFastScrollerApplied) {
             isFastScrollerApplied = true;
             Global.applyFastScroller(findViewById(R.id.recycler));
@@ -76,6 +107,7 @@ public abstract class GeneralActivity extends AppCompatActivity {
         if (preferences.getBoolean(getString(R.string.preference_key_black_theme), false)) {
             theme.applyStyle(R.style.AppTheme_Black, true);
         }
+        com.maxwai.nclientv3.utility.AccentTheme.apply(theme, com.maxwai.nclientv3.utility.AccentTheme.selected(this));
         return theme;
     }
 }

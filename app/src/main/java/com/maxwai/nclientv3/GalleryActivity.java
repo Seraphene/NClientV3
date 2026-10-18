@@ -149,7 +149,7 @@ public class GalleryActivity extends BaseActivity {
         Objects.requireNonNull(manager).setSpanSizeLookup(new CustomGridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                return adapter == null ? 0 : (adapter.positionToType(position) == GalleryAdapter.Type.PAGE ? 1 : manager.getSpanCount());
+                return adapter == null ? manager.getSpanCount() : (adapter.positionToType(position) == GalleryAdapter.Type.PAGE ? 1 : manager.getSpanCount());
             }
         });
     }
@@ -202,25 +202,33 @@ public class GalleryActivity extends BaseActivity {
 
         collapsing.setOnLongClickListener(listener);
         findViewById(R.id.toolbar).setOnLongClickListener(listener);
-        if (title.length() > 100) {
-            collapsing.setExpandedTitleTextAppearance(android.R.style.TextAppearance_DeviceDefault_Medium);
-            collapsing.setMaxLines(5);
-        } else {
-            collapsing.setExpandedTitleTextAppearance(android.R.style.TextAppearance_DeviceDefault_Large);
-            collapsing.setMaxLines(4);
-        }
+        // The complete title is in the gallery hero; the toolbar remains a quiet navigation row.
         actionBar.setTitle(title);
 
     }
 
     @Override
+    protected void changeLayout(boolean landscape) {
+        if (recycler == null) return;
+        CustomGridLayoutManager old = (CustomGridLayoutManager) recycler.getLayoutManager();
+        int position = old == null ? 0 : Math.max(0, old.findFirstVisibleItemPosition());
+        recycler.setLayoutManager(new CustomGridLayoutManager(this, Global.getColumnCount()));
+        if (adapter != null) {
+            adapter.setColCount(Global.getColumnCount());
+            recycler.setAdapter(adapter);
+            lookup();
+            recycler.scrollToPosition(position);
+        }
+    }
+
+    @Override
     protected int getPortraitColumnCount() {
-        return 0;
+        return Global.getColumnCount();
     }
 
     @Override
     protected int getLandscapeColumnCount() {
-        return 0;
+        return Global.getColumnCount();
     }
 
 
@@ -234,6 +242,18 @@ public class GalleryActivity extends BaseActivity {
         if (unknown) item.setTitle(R.string.toggle_online_favorite);
         else if (onlineFavorite) item.setTitle(R.string.remove_from_online_favorites);
         else item.setTitle(R.string.add_to_online_favorite);
+    }
+
+    public void performGalleryAction(int id) {
+        MenuItem action = toolbar.getMenu().findItem(id);
+        if (action != null) onOptionsItemSelected(action);
+    }
+
+    public void refreshReadAction() {
+        com.google.android.material.button.MaterialButton read = findViewById(R.id.gallery_read);
+        if (read == null) return;
+        int page = Queries.ResumeTable.pageFromId(gallery.getId());
+        read.setText(page > 0 ? getString(R.string.continue_page, page) : getString(R.string.read_gallery));
     }
 
     @Override
@@ -271,6 +291,7 @@ public class GalleryActivity extends BaseActivity {
         super.onResume();
         updateColumnCount(false);
         supportInvalidateOptionsMenu();
+        refreshReadAction();
     }
 
     @Override
@@ -314,6 +335,11 @@ public class GalleryActivity extends BaseActivity {
             isLocalFavorite = !isLocalFavorite;
             item.setIcon(isLocalFavorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
             Global.setTint(this, item.getIcon());
+            com.google.android.material.button.MaterialButton save = findViewById(R.id.gallery_save);
+            if (save != null) {
+                save.setText(isLocalFavorite ? R.string.ui_saved : R.string.ui_save);
+                save.setIconResource(isLocalFavorite ? R.drawable.ic_bookmark : R.drawable.ic_bookmark_border);
+            }
         } else if (id == android.R.id.home) {
             getOnBackPressedDispatcher().onBackPressed();
             return true;

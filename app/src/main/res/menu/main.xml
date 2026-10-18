@@ -12,31 +12,31 @@
         android:icon="@drawable/ic_help"
         android:title="@string/update_tag_status"
         android:visible="false"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/random_favorite"
         android:icon="@drawable/ic_shuffle"
         android:title="@string/random_manga"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/only_language"
         android:title="@string/all_languages"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/by_popular"
         android:icon="@drawable/ic_sort"
         android:title="@string/sort_by_popular"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/open_browser"
         android:icon="@drawable/ic_world"
         android:title="@string/open_in_browser"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/add_bookmark"
         android:icon="@drawable/ic_bookmark_border"
         android:title="@string/add_bookmark"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/download_page"
         android:icon="@drawable/ic_file"

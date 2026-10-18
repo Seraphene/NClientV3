@@ -167,6 +167,13 @@ public class GeneralPreferenceFragment extends PreferenceFragmentCompat {
     @SuppressLint("ApplySharedPref")
     private void mainMenu() {
         addPreferencesFromResource(R.xml.settings);
+        Preference accent = findPreference(getString(R.string.preference_key_accent));
+        if (accent != null) accent.setOnPreferenceChangeListener((preference, value) -> {
+            act.getSharedPreferences("Settings", 0).edit().putString("accent_color", (String) value).apply();
+            act.recreate();
+            return true;
+        });
+
 
         fillRoba();
 

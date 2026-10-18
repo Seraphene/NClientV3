@@ -4,9 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="8dp"
-    android:layout_marginTop="4dp"
+    android:layout_marginTop="8dp"
     android:layout_marginEnd="8dp"
-    android:layout_marginBottom="4dp">
+    android:layout_marginBottom="12dp">
 
     <LinearLayout
         android:id="@+id/master"
@@ -40,10 +40,11 @@
             app:layout_constraintBottom_toBottomOf="@id/image" />
         <TextView
             android:id="@+id/page_number"
+            android:padding="10dp" android:textColor="@color/text_secondary" android:textSize="12sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
             android:maxLines="1" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

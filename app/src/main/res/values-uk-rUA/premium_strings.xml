@@ -1,0 +1,29 @@
+<resources>
+    <string name="nav_explore">Огляд</string>
+    <string name="nav_library">Бібліотека</string>
+    <string name="nav_downloads">Завантажені</string>
+    <string name="reading_space">Твій простір для читання</string>
+    <string name="explore_subtitle">Історії, з якими не хочеться поспішати.</string>
+    <string name="library_subtitle">Улюблені історії завжди поруч.</string>
+    <string name="downloads_subtitle">Твоя колекція доступна будь-де.</string>
+    <string name="settings_subtitle">Читання у твоєму стилі.</string>
+    <string name="recent_reads">Нещодавні</string>
+    <string name="search_hint_modern">Назви, теги, автори…</string>
+    <string name="empty_shelf_title">Місце для нової улюбленої історії</string>
+    <string name="empty_shelf_subtitle">Відкривай і зберігай історії — вони з’являться тут.</string>
+    <string name="gallery_edition">У твоїй колекції</string>
+    <string name="pages_heading">Сторінки</string>
+    <string name="gallery_details">Про цю галерею</string>
+    <string name="show_details">Показати відомості</string>
+    <string name="hide_details">Сховати відомості</string>
+    <string name="search_subtitle">Знайди історію, у яку варто зануритися.</string>
+    <string name="continue_page">Продовжити · стор. %1$d</string>
+<string name="ui_save">Зберегти</string><string name="ui_saved">Збережено</string>
+<string name="accent_color">Колір акценту</string>
+<string name="accent_gold">Золото</string>
+<string name="accent_jade">Нефрит</string>
+<string name="accent_ocean">Океан</string>
+<string name="accent_amethyst">Аметист</string>
+<string name="accent_rose">Троянда</string>
+<string name="accent_copper">Мідь</string>
+</resources>

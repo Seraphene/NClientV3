@@ -71,7 +71,7 @@ public class ImageDownloadUtility {
         android.widget.TextView status = parent == null ? null : parent.findViewById(com.maxwai.nclientv3.R.id.page_load_status);
         if (progress != null) progress.setVisibility(android.view.View.VISIBLE);
         if (status != null) status.setVisibility(android.view.View.GONE);
-        request.placeholder(Global.getLogo(context.getResources()))
+        request.placeholder(com.maxwai.nclientv3.R.drawable.cover_placeholder)
             .error(com.maxwai.nclientv3.R.drawable.ic_refresh)
             .addListener(new RequestListener<Drawable>() {
                 @Override

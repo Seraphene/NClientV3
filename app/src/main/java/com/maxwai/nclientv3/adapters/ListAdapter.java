@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class ListAdapter extends RecyclerView.Adapter<GenericAdapter.ViewHolder> {
+    private final java.util.Set<Integer> opening = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private final SparseIntArray statuses = new SparseIntArray();
     private final List<SimpleGallery> mDataset;
     private final BaseActivity context;
@@ -52,10 +53,19 @@ public class ListAdapter extends RecyclerView.Adapter<GenericAdapter.ViewHolder>
         queryString = TagV2.getAvoidedTags();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        androidx.recyclerview.widget.RecyclerView.LayoutManager manager = context.getRecycler().getLayoutManager();
+        boolean single = context.getResources().getConfiguration().screenHeightDp < 500
+            || (manager instanceof androidx.recyclerview.widget.GridLayoutManager
+            && ((androidx.recyclerview.widget.GridLayoutManager) manager).getSpanCount() == 1);
+        return single && !(context instanceof com.maxwai.nclientv3.GalleryActivity) ? R.layout.entry_layout_single : R.layout.entry_layout;
+    }
+
     @NonNull
     @Override
     public GenericAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new GenericAdapter.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.entry_layout, parent, false));
+        return new GenericAdapter.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(viewType, parent, false));
     }
 
     private void loadGallery(final GenericAdapter.ViewHolder holder, SimpleGallery ent) {
@@ -84,25 +94,22 @@ public class ListAdapter extends RecyclerView.Adapter<GenericAdapter.ViewHolder>
         if (context instanceof GalleryActivity) {
             CardView card = (CardView) holder.layout.getParent();
             ViewGroup.LayoutParams params = card.getLayoutParams();
-            params.width = Global.getGalleryWidth();
-            params.height = Global.getGalleryHeight();
+            params.width = (int) (180 * context.getResources().getDisplayMetrics().density);
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
             card.setLayoutParams(params);
         }
         holder.overlay.setVisibility((queryString != null && ent.hasIgnoredTags(queryString)) ? View.VISIBLE : View.GONE);
         loadGallery(holder, ent);
+        View progress = holder.itemView.findViewById(R.id.cover_loading);
+        if (progress != null) progress.setVisibility(opening.contains(ent.getId()) ? View.VISIBLE : View.GONE);
         holder.pages.setVisibility(View.GONE);
         holder.title.setText(ent.getTitle());
         holder.flag.setVisibility(View.VISIBLE);
         if (Global.getOnlyLanguage() == Language.ALL || context instanceof GalleryActivity) {
-            holder.flag.setText(Global.getLanguageFlag(ent.getLanguage()));
+            holder.flag.setText(context.getString(ent.getLanguage().getNameResId()));
+            holder.flag.setVisibility(ent.getLanguage() == com.maxwai.nclientv3.api.enums.Language.UNKNOWN ? View.GONE : View.VISIBLE);
         } else holder.flag.setVisibility(View.GONE);
-        holder.title.setOnClickListener(v -> {
-            Layout layout = holder.title.getLayout();
-            if (layout.getEllipsisCount(layout.getLineCount() - 1) > 0)
-                holder.title.setMaxLines(7);
-            else if (holder.title.getMaxLines() == 7) holder.title.setMaxLines(3);
-            else holder.layout.performClick();
-        });
+        holder.title.setOnClickListener(v -> holder.layout.performClick());
         holder.layout.setOnClickListener(v -> {
               /*Intent intent = new Intent(context, GalleryActivity.class);
               intent.putExtra(context.getPackageName() + ".ID", ent.getId());
@@ -124,7 +131,7 @@ public class ListAdapter extends RecyclerView.Adapter<GenericAdapter.ViewHolder>
             statusColor = Queries.StatusMangaTable.getStatus(ent.getId()).color;
             statuses.put(ent.getId(), statusColor);
         }
-        holder.title.setBackgroundColor(statusColor);
+        com.maxwai.nclientv3.utility.PremiumUi.status(holder.itemView, statusColor);
     }
 
     public void updateColor(int id) {
@@ -134,17 +141,30 @@ public class ListAdapter extends RecyclerView.Adapter<GenericAdapter.ViewHolder>
         for (int i = 0; i < mDataset.size(); i++) {
             SimpleGallery gallery= mDataset.get(i);
             if (gallery != null && gallery.getId() == id) {
-                position = id;
+                position = i;
                 break;
             }
         }
         if (position >= 0) notifyItemChanged(position);
     }
 
+    private void refreshOpening(int id) {
+        context.runOnUiThread(() -> {
+            if (context.isFinishing() || Global.isDestroyed(context)) return;
+            for (int i = 0; i < mDataset.size(); i++) {
+                SimpleGallery gallery = mDataset.get(i);
+                if (gallery != null && gallery.getId() == id) { notifyItemChanged(i); return; }
+            }
+        });
+    }
+
     private void downloadGallery(final SimpleGallery ent) {
+        if (!opening.add(ent.getId())) return;
+        refreshOpening(ent.getId());
         InspectorV3.galleryInspector(context, ent.getId(), new InspectorV3.DefaultInspectorResponse() {
             @Override
             public void onFailure(Exception e) {
+                opening.remove(ent.getId()); refreshOpening(ent.getId());
                 super.onFailure(e);
                 File file = Global.findGalleryFolder(context, ent.getId());
                 if (file != null) {
@@ -161,6 +181,8 @@ public class ListAdapter extends RecyclerView.Adapter<GenericAdapter.ViewHolder>
 
             @Override
             public void onSuccess(List<GenericGallery> galleries) {
+                opening.remove(ent.getId()); refreshOpening(ent.getId());
+                if (context.isFinishing() || Global.isDestroyed(context)) return;
                 if (galleries.size() != 1) {
                     if (context.getMasterLayout() != null) {
                         context.runOnUiThread(() ->

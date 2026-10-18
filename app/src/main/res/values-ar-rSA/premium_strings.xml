@@ -1,0 +1,29 @@
+<resources>
+    <string name="nav_explore">استكشف</string>
+    <string name="nav_library">المكتبة</string>
+    <string name="nav_downloads">التنزيلات</string>
+    <string name="reading_space">مساحتك للقراءة</string>
+    <string name="explore_subtitle">قصص تستحق أن تستمتع بها على مهل.</string>
+    <string name="library_subtitle">احتفظ بقصصك المفضلة بقربك.</string>
+    <string name="downloads_subtitle">مجموعتك جاهزة أينما كنت.</string>
+    <string name="settings_subtitle">تجربة قراءة تناسبك.</string>
+    <string name="recent_reads">القراءات الأخيرة</string>
+    <string name="search_hint_modern">ابحث عن عناوين ووسوم وفنانين…</string>
+    <string name="empty_shelf_title">مساحة لقصتك المفضلة التالية</string>
+    <string name="empty_shelf_subtitle">ستظهر قصصك هنا أثناء الاستكشاف والحفظ.</string>
+    <string name="gallery_edition">في مجموعتك</string>
+    <string name="pages_heading">الصفحات</string>
+    <string name="gallery_details">عن هذا المعرض</string>
+    <string name="show_details">عرض التفاصيل</string>
+    <string name="hide_details">إخفاء التفاصيل</string>
+    <string name="search_subtitle">اعثر على قصة تستحق الانغماس فيها.</string>
+    <string name="continue_page">متابعة · الصفحة %1$d</string>
+<string name="ui_save">حفظ</string><string name="ui_saved">محفوظ</string>
+<string name="accent_color">لون التمييز</string>
+<string name="accent_gold">ذهبي</string>
+<string name="accent_jade">يشمي</string>
+<string name="accent_ocean">محيطي</string>
+<string name="accent_amethyst">جمشتي</string>
+<string name="accent_rose">وردي</string>
+<string name="accent_copper">نحاسي</string>
+</resources>
