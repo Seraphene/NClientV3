@@ -18,14 +18,15 @@ import com.maxwai.nclientv3.settings.AuthStore;
 import com.maxwai.nclientv3.files.GalleryFolder;
 import com.maxwai.nclientv3.utility.ArchiveTicket;
 import com.maxwai.nclientv3.utility.GalleryArchiveExtractor;
-import com.maxwai.nclientv3.utility.ImageHttpClient;
+import com.maxwai.nclientv3.utility.ArchiveHttpClient;
+import com.maxwai.nclientv3.utility.ArchiveRequests;
+import com.maxwai.nclientv3.settings.SiteSession;
 import com.maxwai.nclientv3.utility.ImageUrlResolver;
 import com.maxwai.nclientv3.api.components.Gallery;
 import com.maxwai.nclientv3.api.local.LocalGallery;
 import com.maxwai.nclientv3.async.database.Queries;
 import com.maxwai.nclientv3.settings.Global;
 import com.maxwai.nclientv3.utility.LogUtility;
-import com.maxwai.nclientv3.utility.Utility;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -36,9 +37,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
-import okhttp3.RequestBody;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Pattern;
@@ -258,15 +257,16 @@ public class GalleryDownloaderV2 {
             initDownload();
             if (urls.isEmpty()) { onEnd(); return; }
             if (!AuthStore.hasValidApiKey(context)) throw new IOException(context.getString(R.string.archive_key_required));
-            Request request = new Request.Builder()
-                .url(Utility.getApiBaseUrl() + "galleries/" + id + "/download?format=zip")
-                .post(RequestBody.create(new byte[0], null)).build();
+            Request request = ArchiveRequests.ticket(id);
             ArchiveTicket ticket;
+            String archiveUserAgent = SiteSession.userAgent(context);
             activeCall = Global.getClient(context).newCall(request);
             if (status != Status.DOWNLOADING) { activeCall.cancel(); activeCall = null; return; }
             try (Response response = activeCall.execute()) {
-                if (response.code() == 503) throw new IOException(context.getString(R.string.archive_disabled));
+                ArchiveRequests.check(response, ArchiveRequests.Stage.LINK);
                 ticket = ArchiveTicket.parse(ApiResponse.read(response), System.currentTimeMillis() / 1000);
+                String issuingUserAgent = response.request().header("User-Agent");
+                if (issuingUserAgent != null) archiveUserAgent = issuingUserAgent;
             } finally { activeCall = null; }
             if (status != Status.DOWNLOADING) return;
             Set<Integer> wanted = new HashSet<>();
@@ -276,14 +276,12 @@ public class GalleryDownloaderV2 {
                 String path = java.net.URI.create(ImageUrlResolver.filePath(page.url.toString())).getPath();
                 names.put(path.substring(path.lastIndexOf('/') + 1), page.page);
             }
-            if (ticket.expiresAt <= System.currentTimeMillis() / 1000) throw new IOException("Archive link expired. Retry the download.");
-            // Archive URLs are supplied by the API; credentials stay on the API request.
-            activeCall = ImageHttpClient.get().newBuilder().readTimeout(60, TimeUnit.SECONDS)
-                .callTimeout(10, TimeUnit.MINUTES).build()
-                .newCall(new Request.Builder().url(ticket.url).build());
+            // Archive URLs are supplied by the API; keys never travel to external archive/CDN hosts.
+            activeCall = archiveClient(archiveUserAgent)
+                .newCall(ArchiveRequests.archive(ticket, archiveUserAgent, System.currentTimeMillis() / 1000));
             if (status != Status.DOWNLOADING) { activeCall.cancel(); return; }
             try (Response response = activeCall.execute()) {
-                if (!response.isSuccessful()) throw new IOException("Archive request failed (HTTP " + response.code() + ")");
+                ArchiveRequests.check(response, ArchiveRequests.Stage.FILE);
                 if (response.body() == null) throw new IOException("Empty archive response");
                 GalleryArchiveExtractor.extract(response.body().byteStream(), folder, wanted, names,
                     () -> status != Status.DOWNLOADING, (page, file) -> {
@@ -309,6 +307,11 @@ public class GalleryDownloaderV2 {
             activeCall = null;
             if (status == Status.PAUSED) onPause();
         }
+    }
+
+    protected okhttp3.OkHttpClient archiveClient(String userAgent) {
+        return ArchiveHttpClient.create(userAgent, Global.getClient(context).cookieJar(),
+            () -> AuthStore.hasValidApiKey(context) ? AuthStore.getAuthorizationHeader(context) : null);
     }
 
     private boolean isCorrupted(File file) {

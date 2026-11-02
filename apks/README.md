@@ -1,15 +1,21 @@
 # Installable development APKs
 
-- **Android 9 and newer (including Android 12):** [Download the startup and navigation fix](NClientV3-4.2.7-navigation-fix-android9plus.apk)
-- **Android 8 / 8.1:** [Download the startup and navigation fix](NClientV3-4.2.7-navigation-fix-android8.apk)
+- **Android 9 and newer (including Android 12):** [Download the authenticated archive update](NClientV3-4.2.7-archive-fix-android9plus.apk)
+- **Android 8 / 8.1:** [Download the authenticated archive update](NClientV3-4.2.7-archive-fix-android8.apk)
 
 On GitHub, open the APK and choose **Download raw file**, then open the file on
-your phone. Build **420711 / 4.2.7-debug11** updates **NClientV3 Debug**, retains its
+your phone. Build **420712 / 4.2.7-debug12** updates **NClientV3 Debug**, retains its
 settings, reading progress and API key, and uses the same signing key as the
 previous debug build. It installs alongside the production app.
 
-This update fixes a crash rendering saved stories, makes Downloads refresh and
-search consistent, and moves **Read downloaded stories / Browse online** to the
+This update fixes archive-request identity/session consistency and authorization
+for archive URLs inside the official API. Keys and site cookies are kept away
+from external archive hosts. Download errors now distinguish API-link failures
+from archive-file failures; resuming requests a fresh link. A validated API key
+is required. See [archive request behavior and verification](../docs/archive-downloads.md).
+
+The previous update fixed a crash rendering saved stories, made Downloads refresh and
+search consistent, and moved **Read downloaded stories / Browse online** to the
 top-right toolbar. Pagination now stays above bottom navigation when the header
 scrolls. See [fixes and verification](../docs/navigation-cleanup.md).
 
@@ -35,7 +41,7 @@ discovery, exact API media paths, bounded failover among advertised servers, HTT
 Public reading needs no API key according to the supplied docs. Gallery archive
 downloads require a valid API key in Settings and must be enabled by the server.
 
-See the navigation-cleanup notes for validation and test scope. Tests use Android
+See the archive-download notes for validation and test scope. Tests use Android
 simulation; no physical-device test is claimed.
 The new APK signing identities match the previous build. Verify all retained APK
 checksums with `sha256sum -c SHA256SUMS` from this directory. APKs produced separately
