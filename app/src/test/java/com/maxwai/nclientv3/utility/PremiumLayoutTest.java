@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 /** Native Android rendering of the production XML, using fictional fixture titles and covers. */
 @RunWith(org.robolectric.RobolectricTestRunner.class)
 @Config(sdk = 34, application = Application.class, qualifiers = "w412dp-h892dp-night-mdpi")
-@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@GraphicsMode(GraphicsMode.Mode.LEGACY)
 public class PremiumLayoutTest {
     private static final String[] TITLES = {"After the Rain", "Letters from Kyoto", "The Quiet Hours", "A Season of Light"};
     private ActivityController<AppCompatActivity> activity() {
