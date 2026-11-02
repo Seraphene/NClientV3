@@ -95,7 +95,16 @@ public abstract class MultichoiceAdapter<D, T extends RecyclerView.ViewHolder> e
     public final MultichoiceViewHolder<T> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         T innerLayout = onCreateMultichoiceViewHolder(parent, viewType);
         ViewGroup master = getMaster(innerLayout);
-        ConstraintLayout multiLayout = (ConstraintLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.multichoice_adapter, master, true);
+        // inflate(..., true) returns the parent, whose type depends on the card layout.
+        ConstraintLayout multiLayout = (ConstraintLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.multichoice_adapter, master, false);
+        if (master instanceof ConstraintLayout) {
+            ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(0, 0);
+            params.topToTop = params.bottomToBottom = params.startToStart = params.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+            multiLayout.setLayoutParams(params);
+        } else {
+            multiLayout.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+        }
+        master.addView(multiLayout);
         return new MultichoiceViewHolder<>(multiLayout, innerLayout);
     }
 
@@ -106,6 +115,7 @@ public abstract class MultichoiceAdapter<D, T extends RecyclerView.ViewHolder> e
         updateLayoutParams(master, holder.censor, isSelected);
         if (master != null) {
             master.setOnClickListener(v -> {
+                if (holder.getBindingAdapterPosition() == RecyclerView.NO_POSITION) return;
                 switch (mode) {
                     case SELECTING:
                         toggleSelection(holder.getBindingAdapterPosition());
@@ -116,6 +126,7 @@ public abstract class MultichoiceAdapter<D, T extends RecyclerView.ViewHolder> e
                 }
             });
             master.setOnLongClickListener(v -> {
+                if (holder.getBindingAdapterPosition() == RecyclerView.NO_POSITION) return false;
                 map.put(getItemId(holder.getBindingAdapterPosition()), getItemAt(holder.getBindingAdapterPosition()));
                 notifyItemChanged(holder.getBindingAdapterPosition());
                 return true;
@@ -146,6 +157,7 @@ public abstract class MultichoiceAdapter<D, T extends RecyclerView.ViewHolder> e
     }
 
     private void toggleSelection(int position) {
+        if (position == RecyclerView.NO_POSITION) return;
         long id = getItemId(position);
         if (map.containsKey(id))
             map.remove(id);

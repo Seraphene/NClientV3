@@ -1,66 +1,42 @@
 package com.maxwai.nclientv3.api.local;
 
 import com.maxwai.nclientv3.LocalActivity;
-import com.maxwai.nclientv3.adapters.LocalAdapter;
 import com.maxwai.nclientv3.components.ThreadAsyncTask;
 import com.maxwai.nclientv3.utility.LogUtility;
-
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
-public class FakeInspector extends ThreadAsyncTask<LocalActivity, LocalActivity, LocalActivity> {
-    private final ArrayList<LocalGallery> galleries;
-    private final ArrayList<String> invalidPaths;
-    private LocalAdapter localAdapter;
+/** Scan files off the UI thread; publish only if this scan is still current. */
+public class FakeInspector extends ThreadAsyncTask<LocalActivity, Void, List<LocalGallery>> {
+    private final LocalActivity activity;
     private final File folder;
+    private final int generation;
 
-    public FakeInspector(LocalActivity activity, File folder) {
+    public FakeInspector(LocalActivity activity, File parent) {
         super(activity);
-        this.folder = new File(folder, "Download");
-        galleries = new ArrayList<>();
-        invalidPaths = new ArrayList<>();
+        this.activity = activity;
+        this.folder = new File(parent, "Download");
+        this.generation = activity.beginDownloadScan();
     }
 
-
-    @Override
-    protected LocalActivity doInBackground(LocalActivity activity) {
-        localAdapter = new LocalAdapter(activity, new ArrayList<>());
-        activity.setAdapter(localAdapter);
-        if (!this.folder.exists()) return activity;
-        publishProgress(activity);
-        File parent = this.folder;
-        //noinspection ResultOfMethodCallIgnored
-        parent.mkdirs();
-        File[] files = parent.listFiles();
-        if (files == null) return activity;
-        for (File f : files) if (f.isDirectory()) createGallery(f);
-        for (String x : invalidPaths) LogUtility.d("Invalid path: " + x);
-        localAdapter.addGalleries(galleries);
-        galleries.clear();
-        return activity;
-    }
-
-    @Override
-    protected void onProgressUpdate(LocalActivity values) {
-        values.getRefresher().setRefreshing(true);
-    }
-
-    @Override
-    protected void onPostExecute(LocalActivity activity) {
-        activity.getRefresher().setRefreshing(false);
-    }
-
-    private void createGallery(final File file) {
-        LocalGallery lg = new LocalGallery(file, false);
-        if (lg.isValid()) {
-            galleries.add(lg);
-            if (galleries.size() == 50){
-                localAdapter.addGalleries(galleries);
-                galleries.clear();
+    @Override protected List<LocalGallery> doInBackground(LocalActivity unused) {
+        List<LocalGallery> galleries = new ArrayList<>();
+        try {
+            if (!folder.exists()) return galleries;
+            File[] files = folder.listFiles();
+            if (files == null) return null;
+            for (File file : files) if (file.isDirectory()) {
+                try {
+                    LocalGallery gallery = new LocalGallery(file, false);
+                    if (gallery.isValid()) galleries.add(gallery);
+                } catch (RuntimeException error) { LogUtility.e("Unable to read downloaded gallery", error); }
             }
-        } else {
-            LogUtility.e(lg);
-            invalidPaths.add(file.getAbsolutePath());
-        }
+            return galleries;
+        } catch (SecurityException error) { LogUtility.e("Unable to scan downloads", error); return null; }
+    }
+
+    @Override protected void onPostExecute(List<LocalGallery> galleries) {
+        activity.completeDownloadScan(generation, galleries);
     }
 }

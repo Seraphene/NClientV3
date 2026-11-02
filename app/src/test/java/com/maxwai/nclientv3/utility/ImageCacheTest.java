@@ -22,6 +22,10 @@ import static org.junit.Assert.*;
 @Config(sdk = 31, application = Application.class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class ImageCacheTest {
+    @Before public void resetGlide() {
+        // Native-layout tests may initialize Glide with a different Robolectric app/cache directory.
+        Glide.tearDown();
+    }
     private <T> T await(FutureTarget<T> target) throws Exception {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
         while (!target.isDone() && System.nanoTime() < deadline) {

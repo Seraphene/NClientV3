@@ -46,10 +46,17 @@ public class LocalActivity extends BaseActivity {
     private int idGalleryPosition = -1;
     private File folder = Global.MAINFOLDER;
     private androidx.appcompat.widget.SearchView searchView;
+    private int scanGeneration;
+    private String savedQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            savedQuery = savedInstanceState.getString("download_query", "");
+            String savedFolder = savedInstanceState.getString("download_folder");
+            if (savedFolder != null) folder = new File(savedFolder);
+        }
         //Global.initActivity(this);
         setContentView(R.layout.app_bar_main);
         toolbar = findViewById(R.id.toolbar);
@@ -60,6 +67,7 @@ public class LocalActivity extends BaseActivity {
         actionBar.setTitle(R.string.downloaded_manga);
         findViewById(R.id.page_switcher).setVisibility(View.GONE);
         recycler = findViewById(R.id.recycler);
+        masterLayout = findViewById(R.id.master_layout);
         refresher = findViewById(R.id.refresher);
         refresher.setOnRefreshListener(() -> new FakeInspector(this, folder).execute(this));
         changeLayout(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
@@ -79,9 +87,30 @@ public class LocalActivity extends BaseActivity {
     }
 
     public void setAdapter(LocalAdapter adapter) {
+        if (this.adapter != null) this.adapter.removeObserver();
         this.adapter = adapter;
         this.adapter.addListener(listener);
-        runOnUiThread(() -> recycler.setAdapter(adapter));
+        recycler.setAdapter(adapter);
+        setMenuVisibility(optionMenu);
+    }
+
+    public int beginDownloadScan() { refresher.setRefreshing(true); return ++scanGeneration; }
+
+    public void completeDownloadScan(int generation, List<LocalGallery> galleries) {
+        if (generation != scanGeneration || isFinishing() || isDestroyed()) return;
+        refresher.setRefreshing(false);
+        if (galleries == null) {
+            com.google.android.material.snackbar.Snackbar.make(masterLayout, R.string.failed, com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
+                .setAction(R.string.retry, v -> new FakeInspector(this, folder).execute(this)).show();
+            return;
+        }
+        setAdapter(new LocalAdapter(this, new java.util.ArrayList<>(galleries)));
+    }
+
+    @Override protected void onSaveInstanceState(android.os.Bundle state) {
+        state.putString("download_query", getQuery());
+        if (folder != null) state.putString("download_folder", folder.getAbsolutePath());
+        super.onSaveInstanceState(state);
     }
 
     public void setIdGalleryPosition(int idGalleryPosition) {
@@ -96,6 +125,7 @@ public class LocalActivity extends BaseActivity {
         this.optionMenu = menu;
         setMenuVisibility(menu);
         searchView = (androidx.appcompat.widget.SearchView) menu.findItem(R.id.search).getActionView();
+        if (!savedQuery.isEmpty()) { menu.findItem(R.id.search).expandActionView(); searchView.setQuery(savedQuery, false); searchView.clearFocus(); }
         Objects.requireNonNull(searchView).setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -104,6 +134,7 @@ public class LocalActivity extends BaseActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
+                savedQuery = newText;
                 if (recycler.getAdapter() != null)
                     ((LocalAdapter) recycler.getAdapter()).getFilter().filter(newText);
                 return true;
@@ -140,6 +171,7 @@ public class LocalActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
+        scanGeneration++;
         if (adapter != null) adapter.removeObserver();
         super.onDestroy();
     }
@@ -158,10 +190,8 @@ public class LocalActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (idGalleryPosition != -1) {
-            adapter.updateColor(idGalleryPosition);
-            idGalleryPosition = -1;
-        }
+        idGalleryPosition = -1;
+        if (refresher != null && !refresher.isRefreshing()) new FakeInspector(this, folder).execute(this);
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -241,7 +271,7 @@ public class LocalActivity extends BaseActivity {
     }
 
     public String getQuery() {
-        if (searchView == null) return "";
+        if (searchView == null) return savedQuery;
         CharSequence query = searchView.getQuery();
         return query == null ? "" : query.toString();
     }

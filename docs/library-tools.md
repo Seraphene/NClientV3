@@ -11,7 +11,7 @@ be found by title or ID. Clearing a search does not remove history.
 
 ## Downloaded reading
 
-Tap **Read downloaded stories** above the bottom navigation to enter the local
+Tap **Read downloaded stories** in the top-right toolbar (moved there in build 420711) to enter the local
 library. Queued downloads and their partial folders are hidden from this view.
 Tap **Browse online** to return to Explore. The chosen library is remembered for
 the next launch, after the existing PIN/biometric unlock when enabled. Entering

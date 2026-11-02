@@ -76,7 +76,10 @@ public class LibraryToolsTest {
     @Test public void downloadedSwitchPersistsAndLauncherSkipsOnlineBrowsing() throws Exception {
         ActivityController<HistoryActivity> controller=Robolectric.buildActivity(HistoryActivity.class); controller.get().setTheme(R.style.AppTheme);
         try(ActivityController<HistoryActivity> running=controller.setup()) {
-            drain(); running.get().findViewById(R.id.reading_source).performClick();
+            drain();
+            androidx.appcompat.widget.PopupMenu popup=new androidx.appcompat.widget.PopupMenu(running.get(),running.get().findViewById(R.id.toolbar));
+            running.get().onPrepareOptionsMenu(popup.getMenu());
+            popup.getMenu().performIdentifierAction(R.id.reading_source,0);
             Intent launched=Shadows.shadowOf(running.get()).getNextStartedActivity();
             assertEquals(LocalActivity.class.getName(),launched.getComponent().getClassName());
             assertTrue((launched.getFlags() & Intent.FLAG_ACTIVITY_CLEAR_TASK) != 0);
@@ -92,7 +95,9 @@ public class LibraryToolsTest {
         try(ActivityController<android.app.Activity> c=Robolectric.buildActivity(android.app.Activity.class).setup()) {
             ReadingSource.online(c.get()); assertFalse(ReadingSource.downloadedOnly(context));
             assertEquals(MainActivity.class,ReadingSource.startup(context));
-            assertEquals(MainActivity.class.getName(),Shadows.shadowOf(c.get()).getNextStartedActivity().getComponent().getClassName());
+            Intent launched=Shadows.shadowOf(c.get()).getNextStartedActivity();
+            assertEquals(MainActivity.class.getName(),launched.getComponent().getClassName());
+            assertTrue((launched.getFlags() & Intent.FLAG_ACTIVITY_CLEAR_TASK)!=0);
         }
     }
     @Test public void downloadedLibraryHidesQueuedDownloadsButPreservesSavedStories() throws Exception {
@@ -116,6 +121,74 @@ public class LibraryToolsTest {
             ReadingSource.remember(context,false); online=new LocalAdapter(c.get(),stories); assertEquals(2,online.getItemCount());
         } finally {
             if(offline!=null)offline.removeObserver(); if(online!=null)online.removeObserver(); DownloadQueue.remove(manager.downloader(),false);
+        }
+    }
+
+    private void awaitScan(LocalActivity activity) throws Exception {
+        long end=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);
+        while(activity.getRefresher().isRefreshing() && System.nanoTime()<end) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle(); Thread.sleep(10);
+        }
+        assertFalse(activity.getRefresher().isRefreshing());
+    }
+
+    @Test @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    public void toolbarShortcutLeavesRoomForPaginationOnSmallPhone() throws Exception {
+        ReadingHistoryStore.get(context).record(ReadingFixtures.gallery(context, 5), 3);
+        try(ActivityController<HistoryActivity> running=Robolectric.buildActivity(HistoryActivity.class).setup().visible()) {
+            drain(); HistoryActivity activity=running.get();
+            androidx.appcompat.widget.Toolbar toolbar=activity.findViewById(R.id.toolbar);
+            // Exercise AppCompat's menu lifecycle rather than a detached menu fixture.
+            activity.invalidateOptionsMenu(); Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertNotNull(toolbar.getMenu().findItem(R.id.reading_source));
+            View pagination=activity.findViewById(R.id.page_switcher); pagination.setVisibility(View.VISIBLE);
+            View root=((ViewGroup)activity.findViewById(android.R.id.content)).getChildAt(0);
+            root.measure(View.MeasureSpec.makeMeasureSpec(320,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(640,View.MeasureSpec.EXACTLY));
+            root.layout(0,0,320,640);
+            View shortcut=toolbar.findViewById(R.id.reading_source);
+            assertNotNull(shortcut); assertTrue(shortcut.getWidth()>=48); assertTrue(shortcut.getHeight()>=48);
+            int[] pageLocation=new int[2], navigationLocation=new int[2];
+            pagination.getLocationInWindow(pageLocation);
+            activity.findViewById(R.id.bottom_navigation).getLocationInWindow(navigationLocation);
+            assertTrue(pageLocation[1]+pagination.getHeight()<=navigationLocation[1]);
+            assertTrue(activity.getRecycler().getHeight()>=150);
+            android.graphics.Bitmap bitmap=android.graphics.Bitmap.createBitmap(320,640,android.graphics.Bitmap.Config.ARGB_8888);
+            root.draw(new android.graphics.Canvas(bitmap));
+            File output=new File("build/ui-previews/"+BuildConfig.FLAVOR+"/cleanup-toolbar-320.png"); output.getParentFile().mkdirs();
+            try(java.io.FileOutputStream stream=new java.io.FileOutputStream(output)) {
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,stream);
+            }
+        }
+    }
+
+    @Test public void downloadsRefreshKeepsSearchAndRejectsOlderScanResults() throws Exception {
+        File root=new File(context.getFilesDir(),"Download test"); assertTrue(root.mkdir());
+        File downloads=new File(root,"Download"); assertTrue(downloads.mkdir());
+        Global.MAINFOLDER=root; Global.DOWNLOADFOLDER=downloads;
+        File rain=new File(downloads,"Rain"), forest=new File(downloads,"Forest");
+        assertTrue(rain.mkdir()); assertTrue(forest.mkdir());
+        assertTrue(new File(rain,"1.png").createNewFile()); assertTrue(new File(forest,"1.png").createNewFile());
+        ActivityController<LocalActivity> controller=Robolectric.buildActivity(LocalActivity.class); controller.get().setTheme(R.style.AppTheme);
+        try(ActivityController<LocalActivity> running=controller.setup()) {
+            LocalActivity activity=running.get(); awaitScan(activity);
+            assertEquals(2,activity.getRecycler().getAdapter().getItemCount());
+            androidx.appcompat.widget.PopupMenu popup=new androidx.appcompat.widget.PopupMenu(activity,activity.findViewById(R.id.toolbar));
+            activity.onCreateOptionsMenu(popup.getMenu());
+            SearchView search=(SearchView)popup.getMenu().findItem(R.id.search).getActionView();
+            search.setQuery("RAIN",false);
+            int old=activity.beginDownloadScan(); int latest=activity.beginDownloadScan();
+            activity.completeDownloadScan(latest,Arrays.asList(new LocalGallery(rain),new LocalGallery(forest)));
+            assertEquals(1,activity.getRecycler().getAdapter().getItemCount());
+            Object current=activity.getRecycler().getAdapter();
+            activity.completeDownloadScan(old,Collections.emptyList());
+            assertSame(current,activity.getRecycler().getAdapter());
+            search.setQuery("Forest",false); search.setQuery("Rain",false);
+            long end=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);
+            do { Shadows.shadowOf(Looper.getMainLooper()).idle(); Thread.sleep(10); }
+            while(System.nanoTime()<end && activity.getRecycler().getAdapter().getItemCount()!=1);
+            running.recreate(); awaitScan(running.get());
+            assertEquals("Rain",running.get().getQuery());
+            assertEquals(1,running.get().getRecycler().getAdapter().getItemCount());
         }
     }
 }

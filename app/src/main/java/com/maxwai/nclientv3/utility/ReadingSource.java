@@ -27,7 +27,7 @@ public final class ReadingSource {
     }
     public static void online(Activity activity) {
         remember(activity, false);
-        activity.startActivity(new Intent(activity, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+        activity.startActivity(new Intent(activity, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
         if (!(activity instanceof MainActivity)) activity.finish();
     }
 }

@@ -16,7 +16,7 @@ val keystoreProperties = Properties().apply {
 val majorVersion = 4
 val minorVersion = 2
 val patchVersion = 7
-val buildVersion = 10
+val buildVersion = 11
 val version = "${majorVersion}.${minorVersion}.${patchVersion}"
 
 android {
@@ -64,7 +64,7 @@ android {
         }
         getByName("debug") {
             applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug10"
+            versionNameSuffix = "-debug11"
             resValue("string", "app_name", "NClientV3 Debug")
         }
         create("RelWithDebInfo") {
@@ -115,13 +115,6 @@ android {
 }
 
 androidComponents {
-    var apkFolder = layout.buildDirectory.dir("outputs/apk").get()
-    var deleteFolder = tasks.register<Delete>("deleteReleaseAPKs") {
-        delete(apkFolder.dir("release"))
-    }
-    tasks.named("assemble") {
-        dependsOn(deleteFolder)
-    }
     onVariants { variant ->
         var suffix = ""
         if (variant.flavorName == "pre28") {
@@ -135,6 +128,7 @@ androidComponents {
         var renameTask =
             tasks.register<CreateRenamedApk>("createRenamedApk${variant.flavorName?.capitalized()}${variant.buildType?.capitalized()}") {
                 this.apkFolder.set(variant.artifacts.get(SingleArtifact.APK))
+                this.destinationFolder.set(layout.buildDirectory.dir("outputs/installable/${variant.name}"))
                 this.builtArtifactsLoader.set(variant.artifacts.getBuiltArtifactsLoader())
                 this.versionName.set(
                     variant.outputs.single().versionName.get().substringBeforeLast("-")
@@ -144,7 +138,6 @@ androidComponents {
         tasks.whenTaskAdded {
             if (name == "assemble${variant.flavorName?.capitalized()}${variant.buildType?.capitalized()}") {
                 finalizedBy(renameTask)
-                dependsOn(deleteFolder)
             } else if (name == "assemble") {
                 dependsOn(renameTask)
             }
@@ -200,6 +193,9 @@ abstract class CreateRenamedApk : DefaultTask() {
     @get:InputFiles
     abstract val apkFolder: DirectoryProperty
 
+    @get:OutputDirectory
+    abstract val destinationFolder: DirectoryProperty
+
     @get:Internal
     abstract val builtArtifactsLoader: Property<BuiltArtifactsLoader>
 
@@ -214,12 +210,11 @@ abstract class CreateRenamedApk : DefaultTask() {
         val builtArtifacts = builtArtifactsLoader.get().load(apkFolder.get())
             ?: throw RuntimeException("Cannot load APKs")
         val newName = "NClientV3_${versionName.get()}${suffix.get()}.apk"
-        val newFile = apkFolder.asFile.get().resolve(newName)
-        File(builtArtifacts.elements.single().outputFile).renameTo(newFile)
-        if (!suffix.get().contains("_debug")) {
-            val releaseFolder =
-                apkFolder.get().asFile.parentFile.parentFile.resolve("release").resolve(newName)
-            newFile.copyTo(releaseFolder)
-        }
+        val destination = destinationFolder.get().asFile
+        destination.mkdirs()
+        // Keep AGP's output and metadata intact for subsequent test/bundle tasks.
+        // Publish named copies in a separate, declared output directory.
+        File(builtArtifacts.elements.single().outputFile)
+            .copyTo(destination.resolve(newName), overwrite = true)
     }
 }

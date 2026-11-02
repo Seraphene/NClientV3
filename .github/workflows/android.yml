@@ -45,5 +45,8 @@ jobs:
                 uses: actions/upload-artifact@v7
                 with:
                     name: Debug APKs
-                    path: app/build/outputs/apk/
+                    path: |
+                        app/build/outputs/installable/post28Debug/*.apk
+                        app/build/outputs/installable/pre28Debug/*.apk
+                    if-no-files-found: error
                     retention-days: 30

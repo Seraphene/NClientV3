@@ -94,6 +94,12 @@ public abstract class GeneralActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    @Override public boolean onPrepareOptionsMenu(android.view.Menu menu) {
+        boolean prepared = super.onPrepareOptionsMenu(menu);
+        com.maxwai.nclientv3.utility.PremiumUi.configureSourceMenu(this, menu);
+        return prepared;
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -44,14 +44,8 @@ public final class PremiumUi {
         TextView title = activity.findViewById(R.id.screen_heading), body = activity.findViewById(R.id.screen_subtitle);
         if (title != null) title.setText(heading);
         if (body != null) body.setText(subtitle);
-        android.widget.Button source = activity.findViewById(R.id.reading_source);
-        if (source != null) {
-            source.setVisibility(primary ? View.VISIBLE : View.GONE);
-            boolean local = activity instanceof LocalActivity && ReadingSource.downloadedOnly(activity);
-            source.setText(local ? R.string.browse_online : R.string.read_downloads);
-            source.setOnClickListener(v -> { if (local) ReadingSource.online(activity); else ReadingSource.downloads(activity); });
-            if (local && body != null) body.setText(R.string.downloaded_reading_summary);
-        }
+        if (activity instanceof LocalActivity && ReadingSource.downloadedOnly(activity) && body != null)
+            body.setText(R.string.downloaded_reading_summary);
         View header = activity.findViewById(R.id.shelf_header);
         if (header != null) header.setVisibility(primary && (!browse || rootBrowse)
             && activity.getResources().getConfiguration().screenHeightDp >= 500 ? View.VISIBLE : View.GONE);
@@ -70,14 +64,13 @@ public final class PremiumUi {
                 else if (item.getItemId() == R.id.nav_settings) target = SettingsActivity.class;
                 else target = MainActivity.class;
                 if (activity.getClass() == target) return true;
-                if (target == MainActivity.class) ReadingSource.remember(activity, false);
+                if (target == MainActivity.class) { ReadingSource.online(activity); return true; }
                 if (target == LocalActivity.class && !com.maxwai.nclientv3.settings.Global.hasStoragePermission(activity)) {
                     activity.requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         android.Manifest.permission.READ_EXTERNAL_STORAGE}, DOWNLOAD_PERMISSION);
                     return false;
                 }
                 Intent intent = new Intent(activity, target);
-                if (target == MainActivity.class) intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 activity.startActivity(intent);
                 // Keep Explore as the root; switching tabs does not build an ever-growing back stack.
                 if (!(activity instanceof MainActivity)) activity.finish();
@@ -95,6 +88,22 @@ public final class PremiumUi {
             if (primary) watchEmptyState(activity, recycler, refresh);
         }
         AppearanceTheme.decorate(activity);
+    }
+
+    public static void configureSourceMenu(Activity activity, android.view.Menu menu) {
+        if (!(activity instanceof MainActivity || activity instanceof LocalActivity || activity instanceof HistoryActivity
+            || activity instanceof FavoriteActivity || activity instanceof BookmarkActivity || activity instanceof SettingsActivity)) return;
+        boolean local = activity instanceof LocalActivity && ReadingSource.downloadedOnly(activity);
+        android.view.MenuItem item = menu.findItem(R.id.reading_source);
+        if (item == null) item = menu.add(0, R.id.reading_source, 999, R.string.read_downloads);
+        item.setTitle(local ? R.string.browse_online : R.string.read_downloads);
+        item.setIcon(local ? R.drawable.ic_explore : R.drawable.ic_file);
+        item.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS);
+        item.setOnMenuItemClickListener(clicked -> {
+            if (local) ReadingSource.online(activity); else ReadingSource.downloads(activity);
+            return true;
+        });
+        Utility.tintMenu(activity, menu);
     }
 
     private static void watchEmptyState(Activity activity, RecyclerView recycler, SwipeRefreshLayout refresh) {
