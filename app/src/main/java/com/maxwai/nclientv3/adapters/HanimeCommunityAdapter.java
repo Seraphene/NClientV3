@@ -1,5 +1,6 @@
 package com.maxwai.nclientv3.adapters;
 
+import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -26,10 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HanimeCommunityAdapter extends RecyclerView.Adapter<HanimeCommunityAdapter.ViewHolder> {
-    private final Context context;
+    private final Activity context;
     private final List<HanimeCommunityGallery> items = new ArrayList<>();
 
-    public HanimeCommunityAdapter(Context context) {
+    public HanimeCommunityAdapter(Activity context) {
         this.context = context;
     }
 
